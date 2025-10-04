@@ -276,6 +276,9 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 messageContent.setAttribute("id", "god-text");
                 messageContent.setAttribute("class", "");
                 messageElement.appendChild(textContent);
+            } else if (data.val().effect === 2) {
+                messageContent.style.color = "yellow";
+                messageElement.appendChild(messageContent);
             } else {
                 messageElement.appendChild(messageContent);
             }
@@ -1065,6 +1068,7 @@ function sendMessage() {
                         channel: (sessionStorage.getItem("channel") || "general"),
                         edited: false,
                         time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
+                        effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
                     }).then(function() {
                         db.ref("users/" + username).update({
                             sleep: Date.now(),
@@ -1394,6 +1398,7 @@ function sendMessage() {
                     channel: (sessionStorage.getItem("channel") || "general"),
                     edited: false,
                     time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
+                    effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
                 }).then(function() {
                     db.ref("users/" + username).update({
                         sleep: Date.now(),
@@ -1874,7 +1879,34 @@ function effectMenu() {
                 </div><br><br>
                 Unlock Requirement: Donate $10 B or more legitimately during the 2025 Summer Break     <button onclick="${user_object.val().active_effect === 1 ? "equipEffect('remove')" : "equipEffect(1)"}">${user_object.val().active_effect === 1 ? "Unequip" : "Equip"}</button>
             </div>
+
+            <br><hr>
+
+            <div>
+                Admin<br><br>
+                <div id="message">
+                    <div class="username" style="font-weight: bold; color: yellow;">[SERVER]</div>
+                    <div class="message-text" style="color: yellow">Admin ${getUsername()} has joined the chat<span style="visibility: hidden;">@${getUsername()}</span></div>
+                </div><br><br>
+                Unlock Requirement: Have 1 or more admin levels     <button onclick="${user_object.val().active_effect === 2 ? "equipEffect('remove')" : "equipEffect(2)"}">${user_object.val().active_effect === 2 ? "Unequip" : "Equip"}</button>
+            </div>
+
+            <br><hr>
+
+            <div>Enable effect to apply to messages: <input type="checkbox" id="effectmessage"></div>
         `)
+
+        document.getElementById("effectmessage").addEventListener("change", function(event) {
+            db.ref(`users/${getUsername()}/effects`).update({
+                apply: document.getElementById("effectmessage").checked
+            })
+        })
+
+        if (user_object.val().effects && user_object.val().effects["apply"]) {
+            document.getElementById("effectmessage").checked = true;
+        } else {
+            document.getElementById("effectmessage").checked = false;
+        }
 
         scramblePreview();
     })

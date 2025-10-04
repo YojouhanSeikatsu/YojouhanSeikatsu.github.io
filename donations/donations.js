@@ -1476,7 +1476,8 @@ function jesterRole() {
                         }
                     })
 
-                    db.ref("users/").once("value", function(user_objects) {if (user_objects.val()[getUsername()].ability1sleep) {
+                    db.ref("users/").once("value", function(user_objects) {
+                        if (user_objects.val()[getUsername()].ability1sleep) {
                             document.getElementById("leadercheck").checked = user_objects.val()[getUsername()].ability1sleep[0] || false;
                             document.getElementById("jestermoney").value = user_objects.val()[getUsername()].ability1sleep[1] || 0;
                             document.getElementById("jesterauto").value = user_objects.val()[getUsername()].ability1sleep[2] || 0;

@@ -19,25 +19,243 @@ function getChats() {
     document.getElementById("getChatsButton").remove();
     
     db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        db.ref('chats/').limitToLast(1).once("value", function(last_message) {
-            db.ref('chats/').on('child_added', function(message_object) {
-                let key = null;
+        db.ref('chats/').on('child_added', function(message_object) {
+            globalMessages.push(message_object);
 
-                globalMessages.push(message_object);
+            const data = message_object;
+            const obj = user_object.val();
+            const index = globalMessages.length - 1;
+            const textarea = document.getElementById('textarea');
+            const y_scroll = textarea.scrollTop;
+            var message_height
 
-                last_message.forEach((childSnapshot) => {
-                    key = childSnapshot.key;
+            if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin > 0) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
+                if (everyoneRevealed) {
+                    // var username = data.val().real_name || "[SERVER]";
+                } else {
+                    var username = data.val().name;
+                }
+
+                // TODO: FIX THIS TO DO SOMETHING IDK WHAT
+                if (data.val().removed) {
+                    var message = data.val().message;
+                } else {
+                    var message = data.val().message;
+                }
+                
+                let prevIndex = index - 1;
+                let prevItem = prevIndex >= 0 ? globalMessages[prevIndex] : null;
+                
+                var messageElement = document.createElement("div");
+                messageElement.setAttribute("class", "message");
+
+                if (data.val().name == "[SERVER]") {
+                    var messageImg = document.createElement("img");
+                    messageImg.src = "../images/meteorite.png";
+                    messageImg.setAttribute("class", "profile-img");
+                    messageElement.appendChild(messageImg);
+                }
+
+                var timeElement = document.createElement("div");
+                timeElement.setAttribute("id", "time");
+                timeElement.innerHTML = data.val().time;
+                messageElement.appendChild(timeElement);
+
+                if (data.val().name == "[SERVER]") {
+                    var userElement = document.createElement("div");
+                    userElement.setAttribute("class", "username");
+                    userElement.innerHTML = username;
+                    userElement.style.fontWeight = "bold";
+                    userElement.style.color = "Yellow";
+                    messageElement.appendChild(userElement);
+                } else if (prevItem == null || prevItem.val().name != data.val().name || prevItem.val().channel != data.val().channel || data.val().edited) {
+                    var userElement = document.createElement("div");
+                    userElement.setAttribute("class", "username");
+                    // userElement.addEventListener("click", function(e) {
+                    //     if (userElement.innerHTML.includes("@")) {
+                    //         userElement.innerHTML = username;
+                    //     } else {
+                    //         userElement.innerHTML = username + " @(" + data.val().real_name + ")";
+                    //     }
+                    // })
+                    userElement.innerHTML = username;
+                    if (data.val().edited) {
+                        userElement.innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+                    }
+                    userElement.style.fontWeight = "bold";
+                    timeElement.style.marginTop = "25px";
+                    messageElement.appendChild(userElement);
+                }
+
+
+
+                messageElement.addEventListener("mouseover", function(e) {
+                    messageContent.style.backgroundColor = "gray";
+                    if ((data.val().name == getUsername() || data.val().admin < obj.admin) && !messageElement.querySelector("#delete-button") && !globalMessages[index].val().removed) {
+                        setTimeout(() => {
+                            var trashButton = document.createElement("button");
+                            timeElement.style.visibility = "hidden";
+                            trashButton.innerHTML = "🗑️️";
+                            trashButton.setAttribute("id", "delete-button");
+                            trashButton.addEventListener("click", function() {
+                                db.ref("chats/" + globalMessages[index].key).update({
+                                    removed: getUsername(),
+                                    admin: obj.admin,
+                                });
+                            })
+                            messageElement.appendChild(trashButton);
+                        }, 100);
+                    }
+                    if (data.val().name == getUsername() && !messageElement.querySelector("#edit-button") && !globalMessages[index].val().removed) {
+                        var editing_message = localStorage.getItem("editing");
+                        var editButton = document.createElement("button");
+                        var textBox = document.getElementById("text-box");
+                        editButton.setAttribute("id", "edit-button");
+                        timeElement.style.visibility = "hidden";
+                        if (editing_message == globalMessages[index].key) {
+                            editButton.innerHTML = "🗙";
+                        } else {
+                            editButton.innerHTML = "✏️";
+                        }
+                        editButton.addEventListener("click", function() {
+                            if (editing_message == globalMessages[index].key) {
+                                editButton.innerHTML = "✏️";
+                                localStorage.removeItem("editing");
+                                textBox.value = "";
+                                textBox.focus();
+                            } else {
+                                editButton.innerHTML = "🗙";
+                                db.ref(`chats/${globalMessages[index].key}/message`).once("value", function(edit_message) {
+                                    textBox.value = unsanitize(edit_message.val());
+                                })
+                                textBox.focus();
+                                localStorage.setItem("editing", globalMessages[index].key);
+                            }
+                        });
+
+                        messageElement.appendChild(editButton);
+                    }
                 })
+                messageElement.addEventListener("mouseleave", function(e) {
+                    messageContent.style.backgroundColor = "";
+                    timeElement.style.visibility = "visible";
 
-                if (message_object.key == key) {
-                    loadSubsequentMessages = true;
+                    setTimeout(() => {
+                        var buttons = messageElement.querySelectorAll("#delete-button, #edit-button");
+                        buttons.forEach(function(button) {
+                            button.remove();
+                        })
+                        timeElement.style.visibility = "visible";
+                    }, 100)
+                })
+                
+
+                var messageContent = document.createElement("div");
+                messageContent.setAttribute("class", "message-text");
+
+                if (message.match(/src="([^"]+)"/)) {
+                    var messageImage = document.createElement("img");
+                    messageImage.src = message.match(/src="([^"]+)"/)[1];
+                    messageContent.height = messageImage.height;
                 }
 
-                if (loadSubsequentMessages) {
-                    refreshChat(user_object, false, firstLoad);
-                    firstLoad = false;
+                // Fix escaped LaTeX delimiters
+                // message = message
+                //     .replace(/\\\\\(/g, "\\(")   // \\( -> \(
+                //     .replace(/\\\\\)/g, "\\)")   // \\) -> \)
+                //     .replace(/\\\\\[/g, "\\[")   // \\[ -> \[
+                //     .replace(/\\\\\]/g, "\\]");  // \\] -> \]
+                message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
+                    return "\\[" + p1.replace(/\n/g, " ") + "\\]";
+                });
+
+                messageContent.innerHTML = convertToHTML(message);
+
+                if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
+                    messageContent.setAttribute("id", "ping-text");
                 }
-            })
+
+                if (data.val().edited) {
+                    messageContent.innerHTML = "edited: " + message;
+                }
+
+                if (data.val().removed && data.val().admin >= obj.admin) {
+                    messageContent.innerHTML = `<i><b>REMOVED BY ${data.val().removed}</b></i><span style="display: none">@${data.val().removed} @${data.val().name}</span>`;
+                } else if (data.val().removed && data.val().admin < obj.admin) {
+                    messageContent.innerHTML = `Removed by ${data.val().removed}: ${message}`;
+                }
+
+                if (data.val().effect === 0) {
+                    var textContent = document.createElement("div");
+                    messageElement.appendChild(textContent);
+                    textContent.setAttribute("id", "god-border");
+                    // messageContent.innerHTML = "";
+                    textContent.appendChild(messageContent);
+                    
+                    messageContent.setAttribute("id", "god-text");
+                    messageContent.setAttribute("class", "");
+                    messageElement.appendChild(textContent);
+                } else if (data.val().effect === 2) {
+                    messageContent.style.color = "yellow";
+                    messageElement.appendChild(messageContent);
+                } else {
+                    messageElement.appendChild(messageContent);
+                }
+
+
+                textarea.appendChild(messageElement);
+
+                message_height = messageElement.offsetHeight;
+
+                if (data.val().name == "[VOTING]") {
+                    checkVoting();
+                }
+
+                if (globalMessages.at(-1).val().effect === 1 && data.key == globalMessages.at(-1).key) {
+                    var scrambleText = new ScrambleText(messageContent).start();
+                }
+            }
+
+            // Notifications
+            var prevMessage = globalMessages.at(-1)
+
+            if (document.visibilityState === "hidden") {
+                var announceNotification = localStorage.getItem("announceNotification") || true;
+                var mentionNotification = localStorage.getItem("mentionNotification") || true;
+                var messageNotification = localStorage.getItem("messageNotification") || false;
+
+                if (!(prevMessage.val().channel == "admin" && obj.admin == 0)) {
+                    if (prevMessage.val().username == "[SERVER]" && JSON.parse(announceNotification)) {
+                        notificationNumber += 1
+                    } else if ((prevMessage.val().message.includes("@" + getUsername()) || prevMessage.val().message.includes("@everyone")) && JSON.parse(mentionNotification)) {
+                        notificationNumber += 1
+                    } else if (JSON.parse(messageNotification)) {
+                        notificationNumber += 1
+                    }
+                    if (notificationNumber != 0) {
+                        document.title = "(" + notificationNumber + ") Pebble";
+                    }
+                }
+            }
+            
+            if ((sessionStorage.getItem("channel") || "general") != globalMessages.at(-1).val().channel && !(globalMessages.at(-1).val().channel == "admin" && obj.admin == 0)) {
+                if (joined) {
+                    joined = false;
+                    return;
+                } else if (change_channel) {
+                    return;
+                }
+
+                var notif = document.getElementById(`${globalMessages.at(-1).val().channel}-notif`);
+
+                notif.innerHTML = `(${(parseInt(notif.innerHTML.substring(1,2)) || 0) + 1})`;
+            }
+
+            if (y_scroll + message_height - 15 > textarea.scrollHeight - textarea.clientHeight * 1.5 || prevMessage.val().name == getUsername()) {
+                textarea.scrollTop = textarea.scrollHeight;
+            } else {
+                textarea.scrollTop = y_scroll + message_height - 15;
+            }
         })
     })
 }

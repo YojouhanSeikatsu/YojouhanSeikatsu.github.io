@@ -290,8 +290,19 @@ function checkEdit() {
             globalMessages[index] = message_object;
         }
 
-        document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
-        document.getElementById(message_object.key).children[1].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+        if (document.getElementById(message_object.key).children[1].className !== "username") {
+            var userElement = document.createElement("div");
+            userElement.setAttribute("class", "username");
+            userElement.innerHTML = getUsername();
+            userElement.style.fontWeight = "bold";
+            document.getElementById(message_object.key).prepend(userElement);
+            document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
+            document.getElementById(message_object.key).children[0].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+        } else {
+            document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
+            document.getElementById(message_object.key).children[1].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+        }
+
         document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
     })
 }
@@ -892,7 +903,7 @@ function sendServerMessage(message, join=false) {
                     removed: false,
                     edited: false,
                     time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
-                    effect: typeof(user_object.val().active_effect) == "undefined" || !join ? false : user_object.val().active_effect,
+                    effect: typeof(user_object.val().active_effect) != "undefined" && join && typeof(user_object.val().effects) != "undefined" && Object.hasOwn(user_object.val().effects, user_object.val().active_effect) && user_object.val().effects[user_object.val().active_effect] ? user_object.val().active_effect : false,
                 })
             }
         })

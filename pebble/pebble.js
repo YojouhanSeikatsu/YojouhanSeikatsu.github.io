@@ -473,10 +473,6 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 messageContent.setAttribute("id", "ping-text");
             }
 
-            if (data.val().edited) {
-                messageContent.innerHTML = "edited: " + message;
-            }
-
             if (data.val().removed && data.val().admin >= obj.admin) {
                 messageContent.innerHTML = `<i><b>REMOVED BY ${data.val().removed}</b></i><span style="display: none">@${data.val().removed} @${data.val().name}</span>`;
             } else if (data.val().removed && data.val().admin < obj.admin) {

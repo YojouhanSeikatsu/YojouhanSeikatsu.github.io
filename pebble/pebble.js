@@ -293,7 +293,7 @@ function checkEdit() {
         if (document.getElementById(message_object.key).children[1].className !== "username") {
             var userElement = document.createElement("div");
             userElement.setAttribute("class", "username");
-            userElement.innerHTML = getUsername();
+            userElement.innerHTML = message_object.name;
             userElement.style.fontWeight = "bold";
             document.getElementById(message_object.key).prepend(userElement);
             document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');

@@ -48,6 +48,7 @@ function getChats() {
                 
                 var messageElement = document.createElement("div");
                 messageElement.setAttribute("class", "message");
+                messageElement.setAttribute("id", data.key);
 
                 if (data.val().name == "[SERVER]") {
                     var messageImg = document.createElement("img");
@@ -175,10 +176,6 @@ function getChats() {
                     messageContent.setAttribute("id", "ping-text");
                 }
 
-                if (data.val().edited) {
-                    messageContent.innerHTML = "edited: " + message;
-                }
-
                 if (data.val().removed && data.val().admin >= obj.admin) {
                     messageContent.innerHTML = `<i><b>REMOVED BY ${data.val().removed}</b></i><span style="display: none">@${data.val().removed} @${data.val().name}</span>`;
                 } else if (data.val().removed && data.val().admin < obj.admin) {
@@ -283,18 +280,19 @@ function checkDeletion() {
 }
 
 function checkEdit() {
-    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        db.ref('chats/').on('child_changed', function(message_object) {
-            const index = globalMessages.findIndex(obj =>
-                obj.key === message_object.key
-            );
+    db.ref('chats/').on('child_changed', function(message_object) {
+        const curr = new Date();
+        const index = globalMessages.findIndex(obj =>
+            obj.key === message_object.key
+        );
 
-            if (index !== -1) {
-                globalMessages[index] = message_object;
-            }
+        if (index !== -1) {
+            globalMessages[index] = message_object;
+        }
 
-            refreshChat(user_object);
-        })
+        document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
+        document.getElementById(message_object.key).children[1].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+        document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
     })
 }
 
@@ -347,6 +345,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
             
             var messageElement = document.createElement("div");
             messageElement.setAttribute("class", "message");
+            messageElement.setAttribute("id", data.key);
 
             if (data.val().name == "[SERVER]") {
                 var messageImg = document.createElement("img");

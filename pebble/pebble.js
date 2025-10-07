@@ -2815,9 +2815,9 @@ window.onload = function() {
         fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/getInfo', {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain'
+                'Content-Type': 'application/json'
             },
-            body: typeof(window.APPCHECK) !== "undefined" ? window.APPCHECK : null
+            body: typeof(window.APPCHECK) !== "undefined" ? JSON.stringify({appcheck: window.APPCHECK}) : null
         })
         .then(response => response.json())
         .then(data => {

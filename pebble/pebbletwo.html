@@ -3,6 +3,7 @@
         <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-check-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
 
         <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
@@ -27,8 +28,8 @@
         <div class="login-wrapper" id="login">
             <div class="login-container" id="logincontain">
                 <div class="login-content">
-                    <div class="login-text">Username</div><br>
-                    <input class="login-input" type="text" id="username-login" maxlength="40">
+                    <div class="login-text">Email</div><br>
+                    <input class="login-input" type="text" id="email-login">
                 </div>
                 <div class="login-content">
                     <div class="login-text">Password</div><br>
@@ -36,24 +37,35 @@
                 </div>
                 <button class="login-button" onclick="login()">Login</button>
                 <button class="login-button" style="margin-top:5px" onclick="regMenu()">Register</button>
+                <button class="login-button" style="margin-top:5px" onclick="resetPassword()">Reset your password</button>
+                <p style="font-size: 10px; color: grey; text-align: left">Can't login to your old pebble account? You may need to migrate your account to the new pebble version! Find details<a href="javascript:showPopUp('How to migrate your account','<ol><li>Navigate to the register account page</li><li>Input the same username and password that you had as your old pebble account into the respective fields</li><li>Fill out the other fields</li><li>Click register</li></ol>')">here.</a></p>
             </div>
         </div>
         <div class="register-wrapper" id="register">
             <div class="register-container" id="registercontain">
                 <div class="login-content">
+                    <div class="login-text">Email</div><br>
+                    <input class="register-input" type="text" id="email-register">
+                </div>
+                <div class="login-content">
                     <div class="login-text">Username</div><br>
-                    <input class="register-input" type="text" id="username-register" maxlength="40">
+                    <input class="register-input" type="text" id="username-register">
+                </div>
+                <div class="login-content">
+                    <div class="login-text">Display Name</div><br>
+                    <input class="register-input" type="text" id="display-register">
+                </div>
+                <div class="login-content">
+                    <div class="login-text">Real Name</div><br>
+                    <input class="register-input" type="text" id="name-register">
                 </div>
                 <div class="login-content">
                     <div class="login-text">Password</div><br>
                     <input class="register-input" type="password" id="password-register">
                 </div>
-                <div class="login-content">
-                    <div class="login-text">Real Name (Put your actual real name!)</div><br>
-                    <input class="register-input" type="text" id="name-register" maxlength="30">
-                </div>
                 <button class="login-button" onclick="register()">Register</button>
                 <button class="login-button" style="margin-top:5px" onclick="back()">Back</button>
+                <p style="font-size: 10px; color: grey; text-align: left">Can't migrate your old account due to an error saying "The password must be a string with at least 6 characters"? Your old account might have had a password that was less than 6 characters. In that case go<a href="./migration.html">here</a> to migrate your old account.</p>
             </div>
         </div>
         <div class="wrapper" id="main">
@@ -89,20 +101,18 @@
                 </div>
                 <div class="permaAnnouncements" id="permaAnnouncements">
                     <h2>
-                        Pebble v6.1 is here.
+                        Pebble v7.0 is here.
                     </h2>
                     <h3>
-                        <b>We have updated term #6 of our Terms of Services. <i>No doxxing. Doxers will be evicted. Refer to users on Pebble by their username. Calling someone by their real name will be considered as doxxing.</i></b>
+                        <b>Security Update - what does this mean for you?</i></b>
                     </h3>
                     <hr>
                     <ul>
-                        <li>LaTeX and markdown! Try *x* for italics, **x** for bold, etc.</li>
+                        <li>Reset your password using your email</li>
+                        <li>Access yojouhanseikatsu.org from home and on any device</li>
+                        <li>Password leaks are near-impossible</li>
+                        <li>(Not related to security update) max image upload size reduced from 3 MB to 1 KB. All images previously uploaded that had more than 1 KB were also deleted</li>
                     </ul>
-                    <h2>
-                        Version 7.0 is coming soon
-                    </h2>
-                    <hr>
-                    While pebbles will roll and crumble away with little resistance, rocks will stand the test of time.
                 </div>
                 <div class="profile" id="profile">
                     <div class="user-changer" id="userdisplay"></div>

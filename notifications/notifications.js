@@ -30,6 +30,12 @@ function setup() {
 
 window.onload = function() {
     try {
+        const script = document.createElement('script');
+        script.src = '../config.js';
+        if (typeof(window.APPCHECK) !== "undefined") {
+            self.FIREBASE_APPCHECK_DEBUG_TOKEN = window.APPCHECK;
+        }
+        
         fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/getInfo', {
             method: 'POST',
             headers: {

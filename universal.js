@@ -1,11 +1,7 @@
-let curr_version = "v6.7"
+let curr_version = "v7.0"
 
 function getUsername() {
-    return localStorage.getItem("username");
-}
-
-function getPassword() {
-    return localStorage.getItem("password");
+    return auth.currentUser.uid;
 }
 
 function checkInput(input) {

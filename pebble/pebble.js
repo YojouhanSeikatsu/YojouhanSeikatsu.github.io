@@ -14,6 +14,7 @@ var timeoutId = false;
 var clearchatId = false;
 let images
 let db;
+let auth;
 
 function getChats() {
     document.getElementById("getChatsButton").remove();
@@ -50,7 +51,7 @@ function getChats() {
                 messageElement.setAttribute("class", "message");
                 messageElement.setAttribute("id", data.key);
 
-                if (data.val().name == "[SERVER]") {
+                if (data.val().display_name == "[SERVER]") {
                     var messageImg = document.createElement("img");
                     messageImg.src = "../images/meteorite.png";
                     messageImg.setAttribute("class", "profile-img");
@@ -58,28 +59,37 @@ function getChats() {
                 }
 
                 var timeElement = document.createElement("div");
+                var currTime;
                 timeElement.setAttribute("id", "time");
-                timeElement.innerHTML = data.val().time;
+                currTime = new Date(data.val().time);
+                timeElement.innerHTML = (currTime.getMonth() + 1) + "/" + currTime.getDate() + "/" + currTime.getFullYear() + " " + currTime.getHours().toString().padStart(2, '0') + ":" + currTime.getMinutes().toString().padStart(2, '0');
                 messageElement.appendChild(timeElement);
 
-                if (data.val().name == "[SERVER]") {
+                if (data.val().display_name == "[SERVER]") {
                     var userElement = document.createElement("div");
                     userElement.setAttribute("class", "username");
-                    userElement.innerHTML = username;
+                    userElement.innerHTML = data.val().display_name;
                     userElement.style.fontWeight = "bold";
                     userElement.style.color = "Yellow";
+                    userElement.addEventListener("click", function(e) {
+                        if (userElement.innerHTML.includes("@")) {
+                            userElement.innerHTML = data.val().display_name;
+                        } else {
+                            userElement.innerHTML = data.val().display_name + " @(" + username + ")";
+                        }
+                    })
                     messageElement.appendChild(userElement);
-                } else if (prevItem == null || prevItem.val().name != data.val().name || prevItem.val().channel != data.val().channel || data.val().edited) {
+                } else if (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
                     var userElement = document.createElement("div");
                     userElement.setAttribute("class", "username");
-                    // userElement.addEventListener("click", function(e) {
-                    //     if (userElement.innerHTML.includes("@")) {
-                    //         userElement.innerHTML = username;
-                    //     } else {
-                    //         userElement.innerHTML = username + " @(" + data.val().real_name + ")";
-                    //     }
-                    // })
-                    userElement.innerHTML = username;
+                    userElement.addEventListener("click", function(e) {
+                        if (userElement.innerHTML.includes("@")) {
+                            userElement.innerHTML = data.val().display_name;
+                        } else {
+                            userElement.innerHTML = data.val().display_name + " @(" + username + ")";
+                        }
+                    })
+                    userElement.innerHTML = data.val().display_name;
                     if (data.val().edited) {
                         userElement.innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
                     }
@@ -204,7 +214,7 @@ function getChats() {
 
                 message_height = messageElement.offsetHeight;
 
-                if (data.val().name == "[VOTING]") {
+                if (data.val().display_name == "[VOTING]") {
                     checkVoting();
                 }
 
@@ -239,8 +249,6 @@ function getChats() {
                 if (joined) {
                     joined = false;
                     return;
-                } else if (change_channel) {
-                    return;
                 }
 
                 var notif = document.getElementById(`${globalMessages.at(-1).val().channel}-notif`);
@@ -266,15 +274,15 @@ function checkDeletion() {
 
             if (index !== -1) {
                 globalMessages.splice(index, 1);
-            }
 
-            if (clearchatId) {
-                clearTimeout(clearchatId);
+                if (clearchatId) {
+                    clearTimeout(clearchatId);
+                }
+                
+                clearchatId = setTimeout(() => {
+                    refreshChat(user_object);
+                }, 100)
             }
-            
-            clearchatId = setTimeout(() => {
-                refreshChat(user_object);
-            }, 100)
         })
     })
 }
@@ -358,7 +366,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
             messageElement.setAttribute("class", "message");
             messageElement.setAttribute("id", data.key);
 
-            if (data.val().name == "[SERVER]") {
+            if (data.val().display_name == "[SERVER]") {
                 var messageImg = document.createElement("img");
                 messageImg.src = "../images/meteorite.png";
                 messageImg.setAttribute("class", "profile-img");
@@ -366,28 +374,37 @@ function refreshChat(user_data, change_channel = false, first = false) {
             }
 
             var timeElement = document.createElement("div");
+            var currTime;
             timeElement.setAttribute("id", "time");
-            timeElement.innerHTML = data.val().time;
+            currTime = new Date(data.val().time);
+            timeElement.innerHTML = (currTime.getMonth() + 1) + "/" + currTime.getDate() + "/" + currTime.getFullYear() + " " + currTime.getHours().toString().padStart(2, '0') + ":" + currTime.getMinutes().toString().padStart(2, '0');
             messageElement.appendChild(timeElement);
 
-            if (data.val().name == "[SERVER]") {
+            if (data.val().display_name == "[SERVER]") {
                 var userElement = document.createElement("div");
                 userElement.setAttribute("class", "username");
-                userElement.innerHTML = username;
+                userElement.innerHTML = data.val().display_name;
                 userElement.style.fontWeight = "bold";
                 userElement.style.color = "Yellow";
+                userElement.addEventListener("click", function(e) {
+                    if (userElement.innerHTML.includes("@")) {
+                        userElement.innerHTML = data.val().display_name;
+                    } else {
+                        userElement.innerHTML = data.val().display_name + " @(" + data.val().name + ")";
+                    }
+                })
                 messageElement.appendChild(userElement);
-            } else if (prevItem == null || prevItem.val().name != data.val().name || prevItem.val().channel != data.val().channel || data.val().edited) {
+            } else if (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
                 var userElement = document.createElement("div");
                 userElement.setAttribute("class", "username");
-                // userElement.addEventListener("click", function(e) {
-                //     if (userElement.innerHTML.includes("@")) {
-                //         userElement.innerHTML = username;
-                //     } else {
-                //         userElement.innerHTML = username + " @(" + data.val().real_name + ")";
-                //     }
-                // })
-                userElement.innerHTML = username;
+                userElement.addEventListener("click", function(e) {
+                    if (userElement.innerHTML.includes("@")) {
+                        userElement.innerHTML = data.val().display_name;
+                    } else {
+                        userElement.innerHTML = data.val().display_name + " @(" + data.val().name + ")";
+                    }
+                })
+                userElement.innerHTML = data.val().display_name;
                 if (data.val().edited) {
                     userElement.innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
                 }
@@ -512,7 +529,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
 
             message_height = messageElement.offsetHeight;
 
-            if (data.val().name == "[VOTING]") {
+            if (data.val().display_name == "[VOTING]") {
                 checkVoting();
             }
 
@@ -896,9 +913,10 @@ function sendServerMessage(message, join=false) {
             var curr = new Date();
             if (announceToggle || !Object.hasOwn(admin_object.val(), user_object.val().id)) {
                 db.ref('chats/').push({
-                    name: "[SERVER]",
+                    name: getUsername(),
                     message: message,
-                    admin: 9998,
+                    admin: user_object.val().admin,
+                    display_name: "[SERVER]",
                     channel: (sessionStorage.getItem("channel") || "general"),
                     removed: false,
                     edited: false,
@@ -910,32 +928,11 @@ function sendServerMessage(message, join=false) {
     })
 }
 
-// Auto-login
-function checkCreds() {
-    var username = getUsername()
-    var password = getPassword()
-    if (!username || !password) {
-        return;
-    }
-    db.ref("users/" + username).once('value', function(user_object) {
-        if (user_object.exists() && user_object.val().password == password) {
-            return;
-        }
-        var main = document.getElementById("main");
-        var login = document.getElementById("login");
-        main.style.display = "none";
-        login.style.display = "block";
-        localStorage.clear();
-    })
-}
-
 function sendMessage() {
     // var textarea = document.getElementById("textarea")
     var message = document.getElementById("text-box").value;
     message = message.trim();
 
-    // alert("start\n" + message + "\nend");
-    checkCreds();
     var username = getUsername();
     if (username == null || username == "") {
         return;
@@ -951,7 +948,7 @@ function sendMessage() {
 
         //Check if user is muted
         if (obj.muted) {
-            return;
+            // return;
         }
 
         // EVERYTHING ELSE
@@ -983,16 +980,14 @@ function sendMessage() {
                     mutedUser = mutedUser.val();
                     mutingUser = obj;
 
-                    if (muted_user == 'everyone' && (mutingUser.admin > 0 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id))) {
+                    if (muted_user == 'everyone') {
                         sendServerMessage(mutingUser.username + " muted @everyone... Social Darwinism at its finest.");
                         db.ref("users/").once('value', function(usrObj) {
                             var obj = Object.values(usrObj.val())
                             obj.forEach(function(usr) {
-                                if (!usr.muted && (usr.admin < mutingUser.admin || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) && usr.username != mutingUser.username) {
-                                    db.ref("users/" + usr.username).update({
-                                        muted: true,
-                                    })
-                                }
+                                db.ref("users/" + usr.username).update({
+                                    muted: true,
+                                })
                             })
                         })
                         document.getElementById("text-box").value = "";
@@ -1012,20 +1007,12 @@ function sendMessage() {
                         })
                         return;
                     }
-                    // If the muted user and the muting user have the same admin, then it kamikazes.
-                    if (mutingUser.admin == mutedUser.admin && !Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                        sendServerMessage("@" + mutingUser.username + " initiated a kamikaze mute against @" + mutedUser.username + "!");
-                        db.ref("users/" + mutingUser.username).update({
-                            muted: true
-                        })
-                        db.ref("users/" + mutedUser.username).update({
-                            muted: true
-                        })
-                        return;
-                    }
-                    sendServerMessage(mutingUser.username + " muted @" + mutedUser.username + "!");
                     db.ref("users/" + mutedUser.username).update({
                         muted: true
+                    }).then(() => {
+                        sendServerMessage(mutingUser.username + " muted @" + mutedUser.username + "!");
+                    }).catch((error) => {
+                        alert(error);
                     })
                     return;
                 })
@@ -1042,17 +1029,15 @@ function sendMessage() {
                     unmutingUser = obj;
 
                     // Unmuting everyone
-                    if (unmuted_user == 'everyone' && (unmutingUser.admin > 0 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id))) {
+                    if (unmuted_user == 'everyone') {
                         sendServerMessage(unmutingUser.username + " unmuted @everyone! Thank the Lord!");
                         db.ref("users/").once('value', function(usrObj) {
                             var obj = Object.values(usrObj.val());
                             var usernames = obj;
                             usernames.forEach(function(usr) {
-                                if (usr.muted && (usr.admin < unmutingUser.admin)) {
-                                    db.ref("users/" + usr.username).update({
-                                        muted: false,
-                                    })
-                                }
+                                db.ref("users/" + usr.username).update({
+                                    muted: false,
+                                })
                             })
                         })
                         document.getElementById("text-box").value = "";
@@ -1068,12 +1053,13 @@ function sendMessage() {
                         alert("You don't have the admin level to do this!");
                         return;
                     }
-                    if (unmutingUser.admin > unmutedUser.admin || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
+                    db.ref("users/" + unmutedUser.username).update({
+                        muted: false
+                    }).then(() => {
                         sendServerMessage(unmutingUser.username + " unmuted @" + unmutedUser.username + "!");
-                        db.ref("users/" + unmutedUser.username).update({
-                            muted: false
-                        })
-                    }
+                    }).catch((error) => {
+                        alert(error);
+                    })
                     return;
                 })
                 document.getElementById("text-box").value = "";
@@ -1087,70 +1073,35 @@ function sendMessage() {
                         alert("User cannot be revealed, " + revealed_user + " does not exist!");
                         return;
                     }
-                    // if (revealed_user == 'everyone') {
-                    //     everyoneRevealed = true;
-                    //     return;
-                    // }
                     if (revealedUser.val().admin + 9000 >=  revealingUser.admin && revealedUser.val().username != revealingUser.username && !Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                         // alert("Real Name: " + revealedUser.val().name + "\nAdmin Level: " + revealedUser.val().admin);
                         alert("\nAdmin Level: " + revealedUser.val().admin);
                     } else {
-                        alert("Username: " + revealedUser.val().username + "\nPassword: " + revealedUser.val().password + "\nReal Name: " + revealedUser.val().name + "\nAdmin Level: " + revealedUser.val().admin);
+                        alert("Username: " + revealedUser.val().username + "\nReal Name: " + revealedUser.val().name + "\nAdmin Level: " + revealedUser.val().admin);
                     }
                     return;
                 })
-                document.getElementById("text-box").value = "";
-                return;
-            } else if (message == "!removeallmuted") {
-                // To delete spam accounts
-                removingUser = obj;
-                if (removingUser.admin > medianAdmin || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                    sendServerMessage(removingUser.username + " removed all muted users! What a just punishment!");
-                    db.ref("users/").once('value', function(usrObj) {
-                        var obj = Object.values(usrObj.val());
-                        var usernames = obj;
-                        usernames.forEach(function(usr) {
-                            if (usr.muted && (usr.admin + 2 <= removingUser.admin || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) && usr.username != removingUser.username) {
-                                db.ref("users/" + usr.username).remove();
-                                db.ref("userimages/" + usr.username).remove();
-                            }
-                        })
-                    })
-                }
                 document.getElementById("text-box").value = "";
                 return;
             } else if (message.startsWith("!remove @")){
                 var removed_user = message.substring(9);
-                db.ref("users/" + removed_user).once('value', function(removedUser) {
-                    if (!removedUser.exists() || Object.hasOwn(otherObject.val().admin_list, removedUser.val().id)) {
-                        alert("User cannot be removed, " + removed_user + " does not exist!");
-                        return;
-                    }
-                    removedUser = removedUser.val();
-                    removingUser = obj;
 
-                    // If the removed user and the removing user have the same admin, then it kamikazes.
-                    if (removingUser.admin == removedUser.admin && !Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                        // sendServerMessage("@" + removingUser.username + " initiated a kamikaze remove against @" + removedUser.username + "!");
-                        // db.ref("users/" + removingUser.username).remove();
-                        // db.ref("userimages/" + removingUser.username).remove();
-                        // db.ref("users/" + removedUser.username).remove();
-                        // db.ref("userimages/" + removedUser.username).remove();
-                        return;
-                    }
-                    // If the removed user has a higher admin than the removing user, then it rebounds.
-                    if (removingUser.admin < removedUser.admin + 1 && !Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                        // alert(removedUser.username + " has a higher admin level than you! Rebound!");
-                        // sendServerMessage(removedUser.username + " rebounded their remove against @" + removingUser.username);
-                        // db.ref("users/" + removingUser.username).remove();
-                        // db.ref("userimages/" + removingUser.username).remove();                   Riku - I commented out both of these because I don't think they're very good. At most it should be a mute for rebound, removing is just too much.
-                        return;
-                    }
-                    sendServerMessage(removingUser.username + " removed @" + removedUser.username + "!");
-                    db.ref("users/" + removedUser.username).remove();
-                    db.ref("userimages/" + removedUser.username).remove();
-                    return;
+                auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
+                    fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/removeUser", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({idtoken, user: removed_user, channel: (sessionStorage.getItem("channel") || "general")})
+                    }).then(response => response.json()).then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        }
+                    }).catch((error) => {
+                        alert(error);
+                    })
                 })
+
                 document.getElementById("text-box").value = "";
                 return;
             } else if (message.startsWith("!trap @")){
@@ -1285,8 +1236,8 @@ function sendMessage() {
                     db.ref('chats/').push({
                         name: username,
                         message: "Whisper to @" + whispered_user + ": " + message.substring(10 + whispered_user.length),
-                        real_name: obj.name,
                         admin: obj.admin,
+                        display_name: obj.display_name,
                         removed: false,
                         whisper: whispered_user,
                         channel: (sessionStorage.getItem("channel") || "general"),
@@ -1375,46 +1326,31 @@ function sendMessage() {
                 document.getElementById("text-box").value = "";
                 return;
             } else if (message.startsWith("!vote ")) {
-                if (obj.admin > medianAdmin || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                    if (!/\[[^\[\]]*\]/.test(message)) {
-                        alert("Please format the options so that it starts with [ and ends with ] and each option is seperated with a comma (,)");
-                        return;
-                    } else if (message.substring(6, message.indexOf(" [")).trim() == "") {
-                        alert("Please include a title");
-                        return;
-                    }
-                    db.ref("other/vote/").once('value', function(voting) {
-                        votemessage = voting.val()
-                        db.ref("chats/").once('value', function(deletingmessage) {
-                            if (votemessage.message in deletingmessage.val()) {
-                                db.ref("chats/" + votemessage.message).update({
-                                    message: "Voting ended",
-                                });
-                            }
-                        })
-                    })
-                    db.ref("other/vote").remove();
-                    var choices = message.match(/\[(.*?)\]/)[1].split(",").map(item => item.trim().replace(/ /g, "_"));
-                    var title = message.substring(6, message.indexOf(" ["))
-                    var votemessage = choices.map((choice) => choice.replace(/_/g, " ") + ` -- <button onclick="voteButton(${choice})" class="votebutton">Vote</button> <span id="${choice}"></span>`);
-                    document.getElementById("text-box").value = "";
-                    const choicekeys = {};
-                    choices.forEach((value) => {
-                        choicekeys[value] = 0;
-                    });
-                    var curr = new Date();
-                    var messageref = db.ref('chats/').push({
-                        name: "[VOTING]",
-                        message: `<span style="display:none">@everyone</span><h2 class="voteheader">${title}</h2> <div class="votecontent">${votemessage.join("<br/>")}</div>`,
-                        admin: 9998,
-                        channel: (sessionStorage.getItem("channel") || "general"),
-                        removed: false,
-                        edited: false,
-                        time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
-                    })
-                    Object.assign(choicekeys, {message: messageref.key})
-                    db.ref("other/vote").update(choicekeys)
+                if (!/\[[^\[\]]*\]/.test(message)) {
+                    alert("Please format the options so that it starts with [ and ends with ] and each option is seperated with a comma (,)");
+                    return;
+                } else if (message.substring(6, message.indexOf(" [")).trim() == "") {
+                    alert("Please include a title");
+                    return;
                 }
+
+                auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
+                    fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/voteMessage", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({idtoken, title: message.substring(6, message.indexOf(" [")), choices: message.match(/\[(.*?)\]/)[1].split(",").map(item => item.trim().replace(/ /g, "_")), channel: (sessionStorage.getItem("channel") || "general")})
+                    }).then(response => response.json()).then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        }
+                    }).catch((error) => {
+                        alert(error);
+                    })
+                })
+
+                document.getElementById("text-box").value = "";
                 return;
             } else if (message.startsWith("!set @")) {
                 if (obj.admin > 5000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
@@ -1439,21 +1375,17 @@ function sendMessage() {
                 document.getElementById("text-box").value = "";
                 return;
             } else if (message == "!cleardonations") {
-                if (obj.admin > 5000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
+                if (obj.admin > 9000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                     db.ref(`users/`).once("value", function(data_clear) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "id"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name"];
                         var updates = {};
 
                         data_clear.forEach(child => {
-                            var newUserData = {};
-
-                            keptKeys.forEach(key => {
-                                if (child.val().hasOwnProperty(key)) {
-                                    newUserData[key] = child.val()[key];
+                            child.forEach(data => {
+                                if (!keptKeys.includes(data.key)) {
+                                    db.ref(`users/${child.key}/${data.key}`).remove();
                                 }
                             });
-
-                            updates[`users/${child.key}`] = newUserData;
                         });
 
                         db.ref().update(updates);
@@ -1580,16 +1512,32 @@ function sendMessage() {
                 
                 document.getElementById("text-box").value = "";
                 return;
+            } else if (message.startsWith("!donationsban @")) {
+                var banned_user = message.substring(15);
+                db.ref("users/" + banned_user).update({
+                    donationsban: true
+                })
+                sendServerMessage(`${getUsername()} has permanently banned @${banned_user} from donations`);
+                document.getElementById("text-box").value = "";
+                return;
+            } else if (message.startsWith("!donationsunban @")) {
+                var unbanned_user = message.substring(17);
+                db.ref("users/" + unbanned_user).update({
+                    donationsban: false
+                })
+                sendServerMessage(`${getUsername()} has unbanned @${unbanned_user} from donations`);
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!setimagesleep ")) {
                 var imagesleeptime = message.substring(17);
                 if (!/^[0-9]+$/.test(imagesleeptime)) {
-                    alert("Please use a valid number of seconds for profile sleep time");
+                    alert("Please use a valid number of seconds for image sleep time");
                     document.getElementById("text-box").value = "";
                     return;
                 }
                 var imageUser = obj;
                 if (imageUser.admin > medianAdmin || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                    sendServerMessage(imageUser.username + " has changed the profile sleep time to " + imagesleeptime);
+                    sendServerMessage(imageUser.username + " has changed the image sleep time to " + imagesleeptime + " seconds");
                     db.ref("other/").update({
                         imageSleep: imagesleeptime,
                     })
@@ -1608,7 +1556,7 @@ function sendMessage() {
                 db.ref("chats/" + localStorage.getItem("editing")).update({
                     message: message,
                     edited: true,
-                    time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
+                    time: Date.now(),
                 }).then(function() {
                     localStorage.removeItem("editing");
                 })
@@ -1616,12 +1564,12 @@ function sendMessage() {
                 db.ref('chats/').push({
                     name: username,
                     message: message,
-                    real_name: obj.name,
                     admin: obj.admin,
+                    display_name: obj.display_name,
                     removed: false,
                     channel: (sessionStorage.getItem("channel") || "general"),
                     edited: false,
-                    time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
+                    time: Date.now(),
                     effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
                 }).then(function() {
                     db.ref("users/" + username).update({
@@ -1634,98 +1582,73 @@ function sendMessage() {
 }
 
 function logout() {
-    db.ref(`other/admin_list`).once("value", function(admin) {
-        db.ref(`users/${getUsername()}`).once("value", function(object) {
-            if (object.exists() && !Object.hasOwn(admin.val(), object.val().id)) {
-                db.ref("users/" + getUsername()).update({
-                    active: false
-                })
-            }
-
+    db.ref("users/" + getUsername()).update({
+        active: false
+    }).then(() => {
+        firebase.auth().signOut().then(() => {
+            alert("Successfully logged out");
             localStorage.clear();
             window.location.reload();
-        })
+        }).catch((error) => {
+            alert(error);
+        });
     })
 }
 
 function login() {
-    var username = document.getElementById("username-login").value;
+    var email = document.getElementById("email-login").value;
     var password = document.getElementById("password-login").value;
     if (password == "") {
         return;
     }
-    db.ref("users/" + username).once('value', function(user_object) {
-        if (user_object.exists()) {
-            var obj = user_object.val();
-            if (obj.password == password) {
-                localStorage.setItem('username', username);
-                localStorage.setItem('password', password);
-                localStorage.setItem("name", obj.name);
-                alert(credits);
-                alert(termsOfService);
-                window.location.reload();
-                return;
-            } else {
-                alert("Password is incorrect!")
-            }
-        } else {
-            alert("User does not exist!");
-        }
+
+    auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
+        alert(`Successfully signed in, welcome to Pebble, ${userCredential.user.uid}!`);
+        alert(credits);
+        alert(termsOfService);
+    }).catch((error) => {
+        alert(error.message);
     });
 }
 
 function register() {
     var username = document.getElementById("username-register").value;
     var password = document.getElementById("password-register").value;
-    var realName = document.getElementById("name-register").value;
-    if (username == "" || password == "" || username == "[SERVER]" || username == "Casino" || realName == "") {
-        alert("Fill out all fields");
-        return;
-    }
-
-    if (!(checkInput(username) && checkInput(password) && checkInput(realName))) {
-        return;
-    }
-
-    if (username.length > 20) {
-        alert("Username cannot be longer than 20 characters");
-        return;
-    }
-    
-    db.ref("other/current_id").once("value", function(id_object) {
-        db.ref("users/" + username).once('value', function(user_object) {
-            if (user_object.exists() == true) {
-                alert("Username already exists!");
-                return;
-            }
-            db.ref("users/" + username).set({
-                password: password,
-                username: username,
-                name: realName,
-                muted: true,
-                active: true,
-                admin: 0,
-                xss: false,
-                money: 0,
-                autoclicker: 0,
-                mult: 1,
-                id: id_object.val(),
-            }).then(function() {
-                updateMedianAdmin();
-                localStorage.setItem('username', username);
-                localStorage.setItem('password', password);
-                localStorage.setItem("name", realName);
-                sendServerMessage(username + " has joined the chat for the first time<span style='visibility: hidden;'>@" + username + "</span>");
-                db.ref("other/").update({
-                    current_id: firebase.database.ServerValue.increment(1),
-                }).then(function() {
-                    alert(credits);
-                    alert(termsOfService);
-                    window.location.reload();
-                })
-            })
-        })
+    var email = document.getElementById("email-register").value;
+    var display_name = document.getElementById("display-register").value;
+    var name = document.getElementById("name-register").value;
+    fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({uid: username, password: password, email: email, name: name, display: display_name, channel: (sessionStorage.getItem("channel") || "general")})
+    }).then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert(data.message);
+            alert(credits);
+            alert(termsOfService);
+            localStorage.clear();
+            auth.signInWithEmailAndPassword(email, password).then(() => {
+                window.location.reload();
+            }).catch((error) => {
+                alert(error.message);
+            });
+        }
     })
+}
+
+function resetPassword() {
+    var email = document.getElementById("email-login").value;
+
+    auth.sendPasswordResetEmail(email).then(() => {
+        alert("Successfully sent a password reset email");
+    }).catch((error) => {
+        alert(error);
+    });
 }
             
 function checkMute() {
@@ -1771,13 +1694,8 @@ function checkMute() {
 function regMenu() {
     var register = document.getElementById("register");
     var loginBlock = document.getElementById("login");
-    db.ref("other/").once("value", function(obj) {
-        var obj = obj.val();
-        if (!obj.lockdown) {
-            loginBlock.style.display = "none";
-            register.style.display = "block";
-        }
-    })
+    loginBlock.style.display = "none";
+    register.style.display = "block";
 }
 
 function back() {
@@ -1789,11 +1707,10 @@ function back() {
 
 // updates display name
 function update_name() {
-    var name = getUsername();
-    if (name == null) {
+    if (!auth.currentUser) {
         return;
     }
-    db.ref("users/" + name).once('value', function(user_object) {
+    db.ref("users/" + getUsername()).once('value', function(user_object) {
         var obj = user_object.val();
         document.getElementById("userdisplay").innerHTML = obj.username;
     })
@@ -1817,103 +1734,102 @@ function changeChannel(channel) {
 }
 
 function setup() {
-    // log out in another window check
-    window.addEventListener("storage", function(event) {
-        if (event.storageArea === localStorage && event.key === null) {
-            location.reload();
-        }
+    fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/getInfo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: typeof(window.APPCHECK) !== "undefined" ? JSON.stringify({appcheck: window.APPCHECK}) : null
     })
-
-    // Notification check
-    document.addEventListener("visibilitychange", function() {
-        if (document.visibilityState === "visible") {
-            notificationNumber = 0
-            document.title = "Pebble";
-        }
-    });
-
-    document.addEventListener('keydown', event => {
-        const key = event.key.toLowerCase();
-        if (document.getElementById("text-box") == document.activeElement) {
-            if (key == "enter") {
-                if (event.shiftKey){
-                    return;
+    .then(response => response.json())
+    .then(data => {
+        GPT_CONFIG.openai["apiKey"] = data.apiKey;
+        if (data.version === curr_version) {
+            // Notification check
+            document.addEventListener("visibilitychange", function() {
+                if (document.visibilityState === "visible") {
+                    notificationNumber = 0
+                    document.title = "Pebble";
                 }
-                event.preventDefault();
-                sendMessage();
+            });
+
+            document.addEventListener('keydown', event => {
+                const key = event.key.toLowerCase();
+                if (document.getElementById("text-box") == document.activeElement) {
+                    if (key == "enter") {
+                        if (event.shiftKey){
+                            return;
+                        }
+                        event.preventDefault();
+                        sendMessage();
+                        resizeTextBox();
+                    }
+                } else if (document.getElementById("password-login") == document.activeElement) {
+                    if (key == "enter") {
+                        login();
+                    }
+                } else if (document.getElementById("name-register") == document.activeElement) {
+                    if (key == "enter") {
+                        register();
+                    }
+                }
+            })
+
+            document.getElementById("text-box").addEventListener("input", () => {
                 resizeTextBox();
+            });
+
+            slowMode();
+            imageSleepCheck();
+            update_name();
+            // Login and Register Screens
+            var main = document.getElementById("main");
+            var loginBlock = document.getElementById("login");
+
+            if (auth.currentUser) {
+                main.style.display = "block";
+                loginBlock.style.display = "none";
+                db.ref(`other/admin_list`).once("value", function(admin) {
+                    db.ref("users/" + getUsername()).once('value').then(snapshot => {
+                        var obj = snapshot.val();
+                        const lastMessageTime = obj.sleep || 0;
+                        const timePassed = Date.now() - lastMessageTime;
+                        let params = new URLSearchParams(document.location.search);
+                        if ((!obj.muted && !(timePassed < messageSleep) && !obj.trapped) && !(JSON.parse(params.get("ignore")) || false) && !Object.hasOwn(admin.val(), obj.id)) {
+                            sendServerMessage(obj.display_name + " (@" + getUsername() + ")" + " has joined the chat", true);
+                        }
+                    })
+                })
+            } else {
+                main.style.display = "none";
+                loginBlock.style.display = "block";
+                return;
             }
-        } else if (document.getElementById("password-login") == document.activeElement) {
-            if (key == "enter") {
-                login();
+
+            document.getElementById((sessionStorage.getItem("channel") || "general")).style.backgroundColor = "#42464d";
+
+            checkTrapped();
+            checkActive();
+            reloadTrapped();
+            checkDeletion();
+            checkEdit();
+            checkMute();
+
+            db.ref("other/medianAdmin").on('value', (obj) => {
+                obj = obj.val();
+                document.getElementById("medianAdmin").innerHTML = obj;
+            })
+
+            if (localStorage.getItem("terms") == null) {
+                showPopUp("Additional Note (VERY IMPORTANT, MUST READ)", "I am legally obligated to say that we, the creators and/or owners of feynmansums.com, pebble, or any sites associated with it, do not condone the use of this website during instructional time, or to disrupt it. Any violation of this is not tolerated by us. Continue using the website if you understand these conditions.");
+                localStorage.setItem("terms", "read");
             }
-        } else if (document.getElementById("name-register") == document.activeElement) {
-            if (key == "enter") {
-                register();
-            }
+        } else {
+            document.body.innerHTML = `An error has occured. You are most likely using an outdated version of the site. Fetch a new version by pressing "ctrl + shift + R" or "ctrl + f5<br>
+            Newest Version: ${data.version}<br>
+            Your Version: ${curr_version}`;
         }
     })
-
-    document.getElementById("text-box").addEventListener("input", () => {
-        resizeTextBox();
-    });
-
-    slowMode();
-    imageSleepCheck();
-    checkCreds();
-    update_name();
-    // Login and Register Screens
-    var main = document.getElementById("main");
-    var loginBlock = document.getElementById("login");
-    if (getUsername() != null) {
-        main.style.display = "block";
-        loginBlock.style.display = "none";
-        db.ref(`other/admin_list`).once("value", function(admin) {
-            db.ref("users/" + getUsername()).once('value').then(snapshot => {
-                var obj = snapshot.val();
-                const lastMessageTime = obj.sleep || 0;
-                const timePassed = Date.now() - lastMessageTime;
-                let params = new URLSearchParams(document.location.search);
-                if ((!obj.muted && !(timePassed < messageSleep) && !obj.trapped) && !(JSON.parse(params.get("ignore")) || false) && !Object.hasOwn(admin.val(), obj.id)) {
-                    sendServerMessage(getUsername() + " has joined the chat<span style='visibility: hidden;'>@" + getUsername() + "</span>", true);
-                }
-            })
-        })
-    } else {
-        main.style.display = "none";
-        loginBlock.style.display = "block";
-        return;
-    }
-    document.getElementById((sessionStorage.getItem("channel") || "general")).style.backgroundColor = "#42464d";
-
-    checkTrapped();
-    checkActive();
-    reloadTrapped();
-    checkDeletion();
-    checkEdit();
-    checkMute();
-
-    db.ref(`other/admin_list`).once("value", function(admin) {
-        db.ref(`users/${getUsername()}/id`).on("value", function(id_object) {
-            db.ref(`users/${getUsername()}/active`).on("value", function(object) {
-                if (!Object.hasOwn(admin.val(), id_object.val()) && !object.val()) {
-                    db.ref(`users/${getUsername()}`).update({
-                        active: true,
-                    });
-                }
-            })
-        })
-    })
-
-    db.ref("other/medianAdmin").on('value', (obj) => {
-        obj = obj.val();
-        document.getElementById("medianAdmin").innerHTML = obj;
-    })
-
-    if (localStorage.getItem("terms") == null) {
-        showPopUp("Additional Note (VERY IMPORTANT, MUST READ)", "I am legally obligated to say that we, the creators and/or owners of feynmansums.com, pebble, or any sites associated with it, do not condone the use of this website during instructional time, or to disrupt it. Any violation of this is not tolerated by us. Continue using the website if you understand these conditions.");
-        localStorage.setItem("terms", "read");
-    }
 }
 
 function checkTrapped() {
@@ -1959,7 +1875,7 @@ function wipeChat() {
                 if (user_object.val().admin >= 9000 || Object.hasOwn(admin.val(), user_object.val().id)) {
                     var wipeMessage = message.val();
                     db.ref("chats/").remove();
-                    sendServerMessage("<span style='display: none'>@everyone</span>" + (Object.hasOwn(admin.val(), user_object.val().id) ? "someone" : name) + " wiped the chat<br/>" + wipeMessage);
+                    sendServerMessage("<span style='display: none'>@everyone</span>" + name + " wiped the chat<br/>" + wipeMessage);
                 } else {
                     alert("This function is not available to those below 9000 admin level");
                 }
@@ -2078,7 +1994,7 @@ function commandments() {
         newComms += "</li>";
     })
     newComms += "</ol>"
-    showPopUp("Admin Commands", newComms);
+    showPopUp("Commandments", newComms);
 }
 
 function effectMenu() {
@@ -2263,40 +2179,22 @@ function checkImageURL(url, callback) {
   }
 
 function useImage(index) {
-    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        var obj = user_object.val();
-        var curr = new Date();
-        const lastMessageTime = obj.sleep || 0;
-        const timePassed = Date.now() - lastMessageTime;
-
-        if (images[index - 1] !== "../images/image_placeholder.jpg") {
-            if (obj.image || typeof(obj.image) == "undefined") {
-                if (timePassed < messageSleep || obj.muted) {
-                    alert("You cannot post images if you are muted or timed out");
-                    return;
-                }
-
-                document.getElementById("popup").remove();
-                db.ref('chats/').push({
-                    name: obj.username,
-                    message: `<img src="${images[index - 1]}" style="max-width:70%;max-height:30vh">`,
-                    real_name: obj.name,
-                    admin: obj.admin,
-                    removed: false,
-                    channel: (sessionStorage.getItem("channel") || "general"),
-                    edited: false,
-                    time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
-                }).then(function() {
-                    db.ref("users/" + username).update({
-                        sleep: Date.now(),
-                    })
-                })
+    auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
+        fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/useImage", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({idtoken, index: index, channel: (sessionStorage.getItem("channel") || "general")})
+        }).then(response => response.json()).then(data => {
+            if (data.error) {
+                alert(data.error);
             } else {
-                alert("You do not have image privileges");
+                document.getElementById("popup").remove();
             }
-        } else {
-            alert(`Please set an image for image ${index} before using it`);
-        }
+        }).catch((error) => {
+            alert(error);
+        })
     })
 }
 
@@ -2322,42 +2220,30 @@ function imagePreview() {
 }
 
 function submitImage(index) {
-    db.ref(`userimages/${getUsername()}/images/image${index}sleep`).once("value", function(object) {
-        db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-            checkImageURL(document.getElementById("ImageURL").value, function(isValid) {
-                const lastMessageTime = user_object.val().sleep || 0;
-                const timePassed = Date.now() - lastMessageTime;
-
-                if (!isValid) {
-                    alert(`Please use a valid URL for an image`);
-                    return;
-                }
-
-                let base64 = document.getElementById("ImageURL").value.split(',')[1] || document.getElementById("ImageURL").value;
-                let padding = (base64.match(/=+$/) || [''])[0].length;
-                let sizeInBytes = (base64.length * 3) / 4 - padding;
-
-                if ((!object.exists() || Date.now() - (object.val() || 0) > imageSleep || user_object.val().admin > 0) && (user_object.val().image || typeof(user_object.val().image) == "undefined")) {
-                    if (sizeInBytes > 3 * 1024 * 1024) {
-                        alert("Image cannot be larger than 3 MB");
-                        return;
-                    } else if (timePassed < messageSleep || user_object.val().muted) {
-                        alert("You cannot submit images if you are muted or timed out");
-                        return;
-                    }
-                    
-                    db.ref(`userimages/${getUsername()}`).update({
-                        [`images/image${index}`]: document.getElementById("ImageURL").value,
-                        [`images/image${index}sleep`]: Date.now(),
-                    }).then(() => {
+    checkImageURL(document.getElementById("ImageURL").value, function(isValid) {
+        if (isValid) {
+            auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
+                fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/submitImage", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({idtoken, index: index, image: document.getElementById("ImageURL").value, channel: (sessionStorage.getItem("channel") || "general")})
+                }).then(response => response.json()).then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
                         images[index - 1] = document.getElementById("ImageURL").value;
                         document.getElementById("popup").remove();
-                    })
-                } else {
-                    alert(`You are changing image ${index} too quickly`);
-                }
+                        alert(data.message);
+                    }
+                }).catch((error) => {
+                    alert(error);
+                })
             })
-        })
+        } else {
+            alert(`Failed to load image`);
+        }
     })
 }
 
@@ -2802,6 +2688,7 @@ window.onload = function() {
 
         firebase.initializeApp(config);
         db = firebase.database();
+        auth = firebase.auth();
 
         const script = document.createElement('script');
         script.src = '../config.js';
@@ -2812,22 +2699,12 @@ window.onload = function() {
         const appCheck = firebase.appCheck();
         appCheck.activate('6LcSGM8rAAAAAGtvp85S9U7ldej8RieeRdjj6-Hd', true, { provider: firebase.appCheck.ReCaptchaV3Provider });
 
-        fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/getInfo', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: typeof(window.APPCHECK) !== "undefined" ? JSON.stringify({appcheck: window.APPCHECK}) : null
-        })
-        .then(response => response.json())
-        .then(data => {
-            GPT_CONFIG.openai["apiKey"] = data.apiKey;
-            if (data.version === curr_version) {
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
                 setup();
             } else {
-                document.body.innerHTML = `An error has occured. You are most likely using an outdated version of the site. Fetch a new version by pressing "ctrl + shift + R" or "ctrl + f5<br>
-                Newest Version: ${data.version}<br>
-                Your Version: ${curr_version}`;
+                main.style.display = "none";
+                loginBlock.style.display = "block";
             }
         })
     } catch(err) {

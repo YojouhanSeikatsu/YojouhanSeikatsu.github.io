@@ -4,6 +4,7 @@ var gambled_money = 0;
 const channel = new BroadcastChannel('tab-check');
 const policy_list = ["Is Yume 2kki the best game to ever exist?", "Should police officers pay taxes?", "Should bank tellers pay taxes?", "Should stealing autoclickers or mult be a sin?", "Should destroying autolickers, mult, or money be a sin?", "Should arresting the Jester cause police officers to be reset to complete zero?", "Should Council Members pay taxes?", "Should non-Council Members be allowed to see the current policy being voted on and the number of yes and no votes?", "Should Council Members be allowed to change their vote until the last minute?", "Should Council Member votes be anonymous?"];
 let db;
+let auth;
 
 function play() {
     const music = document.getElementById("bg-music");
@@ -318,50 +319,68 @@ function loadSelectors() {
 }
 
 function buyAuto() {
-    db.ref(`users/${getUsername()}`).transaction((obj) => {
-        var price = Math.round(100 * 1.2 ** (obj.autoclicker || 0));
+    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+        var price = Math.round(100 * 1.2 ** (user_object.val().autoclicker || 0));
 
-        if (obj.money >= price) {
-            obj.money -= price
-            obj.autoclicker = (obj.autoclicker || 0) + 1;
+        if (user_object.val().money >= price) {
+            if (user_object.val().autoclicker) {
+                db.ref(`users/${getUsername()}`).update({
+                    money: firebase.database.ServerValue.increment(-price),
+                    autoclicker: firebase.database.ServerValue.increment(1)
+                })
+            } else {
+                db.ref(`users/${getUsername()}`).update({
+                    money: firebase.database.ServerValue.increment(-price),
+                    autoclicker: 1
+                })
+            }
         }
-        return obj;
     })
 }
 
 function sellAuto() {
-    db.ref(`users/${getUsername()}`).transaction((obj) => {
-        var price = Math.round((100 * 1.2 ** (obj.autoclicker - 1 || 0)) * 0.9);
+    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+        var price = Math.round((100 * 1.2 ** (user_object.val().autoclicker - 1 || 0)) * 0.9);
 
-        if (obj.autoclicker > 0) {
-            obj.money += price
-            obj.autoclicker = obj.autoclicker - 1;
+        if (user_object.val().autoclicker > 0) {
+            db.ref(`users/${getUsername()}`).update({
+                money: firebase.database.ServerValue.increment(price),
+                autoclicker: firebase.database.ServerValue.increment(-1)
+            })
         }
-        return obj;
     })
 }
 
 function buyMult() {
-    db.ref(`users/${getUsername()}`).transaction((obj) => {
-        var price = Math.round(250 * 1.4 ** (obj.mult - 1 || 0));
+    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+        var price = Math.round(250 * 1.4 ** (user_object.val().mult - 1 || 0));
 
-        if (obj.money >= price) {
-            obj.money -= price;
-            obj.mult = (obj.mult || 1) + 1;
+        if (user_object.val().money >= price) {
+            if (user_object.val().mult) {
+                db.ref(`users/${getUsername()}`).update({
+                    money: firebase.database.ServerValue.increment(-price),
+                    mult: firebase.database.ServerValue.increment(1)
+                })
+            } else {
+                db.ref(`users/${getUsername()}`).update({
+                    money: firebase.database.ServerValue.increment(-price),
+                    mult: 2
+                })
+            }
         }
-        return obj;
     })
 }
 
 function sellMult() {
-    db.ref(`users/${getUsername()}`).transaction((obj) => {
-        var price = Math.round((250 * 1.4 ** (obj.mult - 2 || 0)) * 0.9);
+    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+        var price = Math.round((250 * 1.4 ** (user_object.val().mult - 2 || 0)) * 0.9);
 
-        if (obj.mult > 1) {
-            obj.money += price
-            obj.mult = obj.mult - 1;
+        if (user_object.val().mult > 1) {
+            db.ref(`users/${getUsername()}`).update({
+                money: firebase.database.ServerValue.increment(price),
+                autoclicker: firebase.database.ServerValue.increment(-1)
+            })
         }
-        return obj;
     })
 }
 
@@ -929,7 +948,7 @@ function arrest() {
                         sendNotification(`${getUsername()} arrested ${target} and confiscated ${object.val().stolenauto || 0} autoclicker(s) and ${object.val().stolenmult || 0} mult`);
                         alert(`Successfully arrested ${target}`);
                     } else if (object.val().role == "jester" && policy_object.val()) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "id"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name"];
 
                         user_object.forEach(key => {
                             if (!keptKeys.includes(key.key)) {
@@ -1139,23 +1158,21 @@ function bankRole() {
                     })
                 })
 
-                db.ref("users/").once("value", function(user_objects) {
-                    user_objects.forEach(function(username) {
-                        if (username.val().loan && !username.val().loan[4]) {
-                            var bankoption = document.createElement("option");
-                            bankoption.value = username.key;
-                            bankoption.innerHTML = username.val().username;
-                            bankselector.appendChild(bankoption);
-                        }
+                user_objects.forEach(function(username) {
+                    if (username.val().loan && !username.val().loan[4]) {
+                        var bankoption = document.createElement("option");
+                        bankoption.value = username.key;
+                        bankoption.innerHTML = username.val().username;
+                        bankselector.appendChild(bankoption);
+                    }
 
-                        if (username.val().loan && username.val().loan[4][0] == object.val().id) {
-                            var bankoption = document.createElement("option");
-                            bankoption.value = username.key;
-                            bankoption.innerHTML = username.val().username;
-                            loanselector.appendChild(bankoption);
-                        }
-                    })
-                });
+                    if (username.val().loan && username.val().loan[4] == object.key) {
+                        var bankoption = document.createElement("option");
+                        bankoption.value = username.key;
+                        bankoption.innerHTML = username.val().username;
+                        loanselector.appendChild(bankoption);
+                    }
+                })
             }
         })
     })
@@ -1176,7 +1193,7 @@ function acceptLoan() {
 
             db.ref(`users/${bankselector.value}/loan`).update({
                 2: customer.val().loan[2] * 3600000 + Date.now(),
-                4: [object.val().id, getUsername()],
+                4: getUsername(),
             })
             db.ref(`users/${bankselector.value}`).update({
                 money: firebase.database.ServerValue.increment(customer.val().loan[0]),
@@ -1197,7 +1214,7 @@ function collectLoan() {
             if (customer.val().loan[2] > Date.now()) {
                 alert(`${loanselector.value}'s loan is not ready to be collected yet`);
                 return;
-            } else if (customer.val().loan[4][0] !== object.val().id) {
+            } else if (customer.val().loan[4] !== object.key) {
                 alert("You are not the one that accepted this loan");
                 return;
             }
@@ -1707,24 +1724,24 @@ function councilRole() {
                     var index = 0;
 
                     if (policy_object.val().voters) {
-                        Object.values(policy_object.val().voters).forEach(function(voters) {
+                        policy_object.val().voters.forEach(function(voters) {
                             var voter = document.createElement("li");
 
                             index++;
 
-                            if (voters[0]) {
-                                if (policy_object.val().list[9] && voters[1] !== getUsername()) {
+                            if (voters.val()) {
+                                if (policy_object.val().list[9] && voters.key !== getUsername()) {
                                     voter.innerHTML = `Voter ${index}`;
                                 } else {
-                                    voter.innerHTML = voters[1];
+                                    voter.innerHTML = voters.key;
                                 }
                                 
                                 document.getElementById("no_voters").appendChild(voter);
                             } else {
-                                if (policy_object.val().list[9] && voters[1] !== getUsername()) {
+                                if (policy_object.val().list[9] && voters.key !== getUsername()) {
                                     voter.innerHTML = `Voter ${index}`;
                                 } else {
-                                    voter.innerHTML = voters[1];
+                                    voter.innerHTML = voters.key;
                                 }
 
                                 document.getElementById("yes_voters").appendChild(voter);
@@ -1750,18 +1767,16 @@ function councilRole() {
 
 function policy_vote(vote) {
     db.ref(`other/policy/list/8`).once("value", function(policy_object) {
-        db.ref(`users/${getUsername()}/id`).once("value", function(user_id) {
-            const time = new Date();
-            let m = time.getMinutes();
+        const time = new Date();
+        let m = time.getMinutes();
 
-            if (policy_object.val() || ((59 - m) >= 15 && m > 0)) { // m > 0 done to account for backend function delays. This function immediately allows for the user to vote once it turns 00 minutes, but it might take ~10 seconds or so for the backend function to start and finish running.
-                db.ref(`other/policy/voters`).update({
-                    [user_id.val()]: [vote, getUsername()]
-                })
-            } else {
-                alert("Cannot vote 15 minutes before the end of the policy");
-            }
-        })
+        if (policy_object.val() || ((59 - m) >= 15 && m > 0)) { // m > 0 done to account for backend function delays. This function immediately allows for the user to vote once it turns 00 minutes, but it might take ~10 seconds or so for the backend function to start and finish running.
+            db.ref(`other/policy/voters`).update({
+                [getUsername()]: vote
+            })
+        } else {
+            alert("Cannot vote 15 minutes before the end of the policy");
+        }
     })
 }
 
@@ -1803,24 +1818,24 @@ function currentPolicies() {
 
         if (policy_object.val().list[7] && policy_object.val().voters) {
             document.getElementById("policyInfo").innerHTML = policy_list[policy_object.val().current - 1];
-            Object.values(policy_object.val().voters).forEach(function(voters) {
+            policy_object.val().voters.forEach(function(voters) {
                 var voter = document.createElement("li");
 
                 index++;
 
-                if (voters[0]) {
-                    if (policy_object.val().list[9] && voters[1] !== getUsername()) {
+                if (voters.val()) {
+                    if (policy_object.val().list[9] && voters.key !== getUsername()) {
                         voter.innerHTML = `Voter ${index}`;
                     } else {
-                        voter.innerHTML = voters[1];
+                        voter.innerHTML = voters.key;
                     }
                     
                     document.getElementById("no_voters").appendChild(voter);
                 } else {
-                    if (policy_object.val().list[9] && voters[1] !== getUsername()) {
+                    if (policy_object.val().list[9] && voters.key !== getUsername()) {
                         voter.innerHTML = `Voter ${index}`;
                     } else {
-                        voter.innerHTML = voters[1];
+                        voter.innerHTML = voters.key;
                     }
 
                     document.getElementById("yes_voters").appendChild(voter);
@@ -2289,14 +2304,6 @@ function setup() {
         return;
     }
 
-    db.ref(`users/${getUsername()}`).once('value', function(object) {
-        if (!object.exists() || object.val().password !== getPassword() || (object.val().muted || false) || (object.val().trapped || false) || Date.now() - (object.val().sleep || 0) < 0) {
-            document.body.innerHTML = `<h1>Unknown error occurred. Either you are removed, muted, trapped, timed out, etc</h1><button onclick="window.location.replace('../pebble/pebbletwo.html?ignore=true')">Pebble</button>`;
-            db.goOffline();
-            return;
-        }
-    })
-
     db.ref(`other/campaign`).on("value", function(object) {
         if (!object.val()) {
             db.ref(`users`).orderByChild("money").limitToLast(1).once("value", function(user_object) {
@@ -2368,6 +2375,7 @@ window.onload = function() {
         };
         firebase.initializeApp(config);
         db = firebase.database();
+        auth = firebase.auth();
 
         const script = document.createElement('script');
         script.src = '../config.js';
@@ -2388,7 +2396,11 @@ window.onload = function() {
         .then(response => response.json())
         .then(data => {
             if (data.version === curr_version) {
-                setup();
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        setup();
+                    }
+                })
             } else {
                 document.body.innerHTML = `An error has occured. You are most likely using an outdated version of the site. Fetch a new version by pressing "ctrl + shift + R" or "ctrl + f5<br>
                 Newest Version: ${data.version}<br>

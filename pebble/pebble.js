@@ -2237,14 +2237,13 @@ function submitImage(index) {
                         alert(data.error);
                     } else {
                         images[index - 1] = document.getElementById("ImageURL").value;
+                        document.getElementById("popup").remove();
                         alert(data.message);
                     }
                 }).catch((error) => {
                     alert(error);
                 })
             })
-
-            document.getElementById("popup").remove();
         } else {
             alert(`Failed to load image`);
         }

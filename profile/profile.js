@@ -12,6 +12,8 @@ function submit() {
     );
 
     if (newPassword === newCopyPassword) {
+        document.getElementById("submit").disabled = true;
+
         auth.currentUser.reauthenticateWithCredential(credential).then(async () => {
             auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
                 fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/changeProfile", {
@@ -32,6 +34,8 @@ function submit() {
             })
         }).catch((error) => {
             alert(error);
+        }).finally(() => {
+            document.getElementById("submit").disabled = false;
         })
     } else {
         alert("New password and confirmed password do not match")

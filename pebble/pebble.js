@@ -1617,6 +1617,7 @@ function register() {
     var email = document.getElementById("email-register").value;
     var display_name = document.getElementById("display-register").value;
     var name = document.getElementById("name-register").value;
+    document.getElementById("register-button").disabled = true;
     fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/register', {
         method: 'POST',
         headers: {
@@ -1638,6 +1639,8 @@ function register() {
                 alert(error.message);
             });
         }
+        
+        document.getElementById("register-button").disabled = false;
     })
 }
 
@@ -2189,13 +2192,13 @@ function useImage(index) {
         }).then(response => response.json()).then(data => {
             if (data.error) {
                 alert(data.error);
-            } else {
-                document.getElementById("popup").remove();
             }
         }).catch((error) => {
             alert(error);
         })
     })
+
+    document.getElementById("popup").remove();
 }
 
 function editImage(index) {
@@ -2234,13 +2237,14 @@ function submitImage(index) {
                         alert(data.error);
                     } else {
                         images[index - 1] = document.getElementById("ImageURL").value;
-                        document.getElementById("popup").remove();
                         alert(data.message);
                     }
                 }).catch((error) => {
                     alert(error);
                 })
             })
+
+            document.getElementById("popup").remove();
         } else {
             alert(`Failed to load image`);
         }

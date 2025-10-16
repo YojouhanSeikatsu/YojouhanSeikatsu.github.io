@@ -84,14 +84,16 @@ function loadLeaderboard() {
                         global_currusers.push(object_child.val().money);
                     })
 
-                    const difference = users.filter(x => !global_prevusers.includes(x));
+                    if (global_prevusers) {
+                        const difference = users.filter(x => !global_prevusers.includes(x));
 
-                    if (global_index % 15 === 0 && difference.length <= 1) {
-                        global_break = true;
+                        if (global_index % 15 === 0 && difference.length <= 1) {
+                            global_break = true;
 
-                        setTimeout(() => {
-                            global_break = false;
-                        }, 3600000)
+                            setTimeout(() => {
+                                global_break = false;
+                            }, 3600000)
+                        }
                     }
 
                     global_prevusers = users;

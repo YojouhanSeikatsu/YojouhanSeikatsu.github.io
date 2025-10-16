@@ -1877,8 +1877,9 @@ function wipeChat() {
             db.ref("wipeMessage").once("value", function(message) {
                 if (user_object.val().admin >= 9000 || Object.hasOwn(admin.val(), user_object.val().id)) {
                     var wipeMessage = message.val();
-                    db.ref("chats/").remove();
-                    sendServerMessage("<span style='display: none'>@everyone</span>" + name + " wiped the chat<br/>" + wipeMessage);
+                    db.ref("chats/").remove().then(() => {
+                        sendServerMessage("<span style='display: none'>@everyone</span>" + name + " wiped the chat<br/>" + wipeMessage);
+                    })
                 } else {
                     alert("This function is not available to those below 9000 admin level");
                 }

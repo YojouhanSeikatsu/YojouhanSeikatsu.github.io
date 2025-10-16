@@ -5,6 +5,10 @@ const channel = new BroadcastChannel('tab-check');
 const policy_list = ["Is Yume 2kki the best game to ever exist?", "Should police officers pay taxes?", "Should bank tellers pay taxes?", "Should stealing autoclickers or mult be a sin?", "Should destroying autolickers, mult, or money be a sin?", "Should arresting the Jester cause police officers to be reset to complete zero?", "Should Council Members pay taxes?", "Should non-Council Members be allowed to see the current policy being voted on and the number of yes and no votes?", "Should Council Members be allowed to change their vote until the last minute?", "Should Council Member votes be anonymous?"];
 let db;
 let auth;
+var global_mult, global_autoclicker, global_stolenauto, global_stolenmult, global_prevusers, global_currusers;
+var global_break = false;
+var global_autoindex = 0;
+var global_leaderindex = 0;
 
 function play() {
     const music = document.getElementById("bg-music");
@@ -41,7 +45,11 @@ function addAmount(autoclicker) {
 
         if (results.money && Number.isInteger(results.money)) {
             if (autoclicker) {
-                loadLeaderboard();
+                if (global_autoindex % 60 === 0) {
+                    loadLeaderboard();
+                }
+
+                global_autoindex++;
             }
 
             db.ref(`users/${getUsername()}`).update({
@@ -57,81 +65,99 @@ function addAmount(autoclicker) {
 
 function loadLeaderboard() {
     var leaderboard = document.getElementById('leaderboard');
+    global_leaderindex++;
 
-    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        db.ref("users/").orderByChild("money").once("value", (object) => {
-            db.ref(`other/Casino`).once("value", function(casino_object) {
-                leaderboard.innerHTML = "";
+    if (!global_break) {
+        db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+            db.ref("users/").orderByChild("money").once("value", (object) => {
+                db.ref(`other/Casino`).once("value", function(casino_object) {
+                    leaderboard.innerHTML = "";
 
-                users = [];
+                    users = [];
 
-                object.forEach((object_child) => {
-                    if ((object_child.val().role !== "pacifist" && user_object.val().role !== "pacifist") || user_object.val().username == object_child.val().username) {
-                        users.push(object_child.val());
-                    }
-                })
-
-                users.sort((a, b) => {
-                    const getValue = (user) => {
-                        if (user.role === "jester" && user.ability1sleep && !Number.isInteger(user.ability1sleep) && user.ability1sleep[0]) {
-                            return user.ability1sleep[1];
+                    object.forEach((object_child) => {
+                        if ((object_child.val().role !== "pacifist" && user_object.val().role !== "pacifist") || user_object.val().username == object_child.val().username) {
+                            users.push(object_child.val());
                         }
-                        return user.money;
-                    };
-                  
-                    return getValue(a) - getValue(b);
-                });
 
-                users.sort((a, b) => {
-                    const timeA = a.timestamp ? Number(a.timestamp) : Infinity;
-                    const timeB = b.timestamp ? Number(b.timestamp) : Infinity;
-                    return timeA - timeB;
-                });
+                        global_currusers = [];
+                        global_currusers.push(object_child.val().money);
+                    })
 
-                users.push(casino_object.val());
-                users.reverse();
+                    const difference = users.filter(x => !global_prevusers.includes(x));
 
-                users.forEach(function(username) {
-                    var leader = document.createElement("div");
-                    leader.setAttribute("class", "leader");
+                    if (global_index % 15 === 0 && difference.length <= 1) {
+                        global_break = true;
+
+                        setTimeout(() => {
+                            global_break = false;
+                        }, 3600000)
+                    }
+
+                    global_prevusers = users;
+
+                    users.sort((a, b) => {
+                        const getValue = (user) => {
+                            if (user.role === "jester" && user.ability1sleep && !Number.isInteger(user.ability1sleep) && user.ability1sleep[0]) {
+                                return user.ability1sleep[1];
+                            }
+                            return user.money;
+                        };
                     
-        
-                    var usernameElement = document.createElement("div");
-                    usernameElement.setAttribute("class", "leader-header");
-                    usernameElement.innerHTML = username.username + ": ";
-                    
-                    
-                    var usernameAmount = document.createElement("span");
-                    usernameAmount.setAttribute("id", "leaderNumber");
-                    usernameAmount.innerHTML = shortenNumber((username.role == "jester" && username.ability1sleep && !Number.isInteger(username.ability1sleep) && username.ability1sleep[0]) ? username.ability1sleep[1] : username.money || 0);
-                    
-                    var usernameImage = document.createElement("img");
-                    usernameImage.src = "../images/money.png";
-                    
-                    usernameElement.appendChild(usernameAmount);
-                    usernameElement.appendChild(usernameImage);
-        
-                    
-                    var contentElement = document.createElement("div");
-                    contentElement.setAttribute("class", "leader-content");
-                    if (username.username == "Casino") {
-                        contentElement.innerHTML = `Total Earnings: $${shortenNumber(username.money)}`;
-                    } else {
-                        if (username.role == "jester" && username.ability1sleep && !Number.isInteger(username.ability1sleep) && username.ability1sleep[0]) {
-                            contentElement.innerHTML = "Auto-Clickers: " + username.ability1sleep[2] + "<br>Mult: " + username.ability1sleep[3] + (username.ability1sleep[4] ? `<br>Gambling: Unlocked` : "") + (username.ability1sleep[6] !== "none" ? `<br>Role: ${username.ability1sleep[6]}` : "") + (user_object.val().role == "angel" || username.username == user_object.val().username ? `<br>Deeds: ${shortenNumber(username.ability1sleep[5])}` : "");
+                        return getValue(a) - getValue(b);
+                    });
+
+                    users.sort((a, b) => {
+                        const timeA = a.timestamp ? Number(a.timestamp) : Infinity;
+                        const timeB = b.timestamp ? Number(b.timestamp) : Infinity;
+                        return timeA - timeB;
+                    });
+
+                    users.push(casino_object.val());
+                    users.reverse();
+
+                    users.forEach(function(username) {
+                        var leader = document.createElement("div");
+                        leader.setAttribute("class", "leader");
+                        
+            
+                        var usernameElement = document.createElement("div");
+                        usernameElement.setAttribute("class", "leader-header");
+                        usernameElement.innerHTML = username.username + ": ";
+                        
+                        
+                        var usernameAmount = document.createElement("span");
+                        usernameAmount.setAttribute("id", "leaderNumber");
+                        usernameAmount.innerHTML = shortenNumber((username.role == "jester" && username.ability1sleep && !Number.isInteger(username.ability1sleep) && username.ability1sleep[0]) ? username.ability1sleep[1] : username.money || 0);
+                        
+                        var usernameImage = document.createElement("img");
+                        usernameImage.src = "../images/money.png";
+                        
+                        usernameElement.appendChild(usernameAmount);
+                        usernameElement.appendChild(usernameImage);
+            
+                        
+                        var contentElement = document.createElement("div");
+                        contentElement.setAttribute("class", "leader-content");
+                        if (username.username == "Casino") {
+                            contentElement.innerHTML = `Total Earnings: $${shortenNumber(username.money)}`;
                         } else {
-                            contentElement.innerHTML = "Auto-Clickers: " + (username.autoclicker || 0) + "<br>Mult: " + (username.mult || 1) + (username.gambling ? `<br>Gambling: Unlocked` : "") + (username.role ? `<br>Role: ${(username.role == "criminal" || username.role == "gambler" || username.role == "jester") ? "citizen" : username.role}` : "") + (user_object.val().role == "angel" ? `<br>Deeds: ${shortenNumber(username.deeds || 0)}` : "");
+                            if (username.role == "jester" && username.ability1sleep && !Number.isInteger(username.ability1sleep) && username.ability1sleep[0]) {
+                                contentElement.innerHTML = "Auto-Clickers: " + username.ability1sleep[2] + "<br>Mult: " + username.ability1sleep[3] + (username.ability1sleep[4] ? `<br>Gambling: Unlocked` : "") + (username.ability1sleep[6] !== "none" ? `<br>Role: ${username.ability1sleep[6]}` : "") + (user_object.val().role == "angel" || username.username == user_object.val().username ? `<br>Deeds: ${shortenNumber(username.ability1sleep[5])}` : "");
+                            } else {
+                                contentElement.innerHTML = "Auto-Clickers: " + (username.autoclicker || 0) + "<br>Mult: " + (username.mult || 1) + (username.gambling ? `<br>Gambling: Unlocked` : "") + (username.role ? `<br>Role: ${(username.role == "criminal" || username.role == "gambler" || username.role == "jester") ? "citizen" : username.role}` : "") + (user_object.val().role == "angel" ? `<br>Deeds: ${shortenNumber(username.deeds || 0)}` : "");
+                            }
                         }
-                    }
-        
-                    leader.appendChild(usernameElement);
-                    leader.appendChild(contentElement);
-        
-                    leaderboard.appendChild(leader);
+            
+                        leader.appendChild(usernameElement);
+                        leader.appendChild(contentElement);
+            
+                        leaderboard.appendChild(leader);
+                    })
                 })
             })
         })
-    })
+    }
 }
 
 function loadNotifications() {
@@ -2317,6 +2343,22 @@ function setup() {
                 return;
             })
         }
+    })
+
+    db.ref(`users/${getUsername()}/mult`).on("value", function(object) {
+        global_mult = object.val();
+    })
+
+    db.ref(`users/${getUsername()}/autoclicker`).on("value", function(object) {
+        global_autoclicker = object.val();
+    })
+
+    db.ref(`users/${getUsername()}/stolenmult`).on("value", function(object) {
+        global_stolenmult = object.val();
+    })
+
+    db.ref(`users/${getUsername()}/stolenauto`).on("value", function(object) {
+        global_stolenauto = object.val();
     })
 
     db.ref(`users/${getUsername()}`).on("child_removed", function(object) {

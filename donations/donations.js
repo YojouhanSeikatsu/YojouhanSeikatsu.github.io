@@ -87,7 +87,7 @@ function loadLeaderboard() {
                     if (global_prevusers) {
                         const difference = users.filter(x => !global_prevusers.includes(x));
 
-                        if (global_index % 15 === 0 && difference.length <= 1) {
+                        if (global_leaderindex % 15 === 0 && difference.length <= 1) {
                             global_break = true;
 
                             setTimeout(() => {

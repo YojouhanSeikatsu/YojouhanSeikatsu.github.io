@@ -920,7 +920,7 @@ function sendServerMessage(message, join=false) {
                     channel: (sessionStorage.getItem("channel") || "general"),
                     removed: false,
                     edited: false,
-                    time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
+                    time: Date.now(),
                     effect: typeof(user_object.val().active_effect) != "undefined" && join && typeof(user_object.val().effects) != "undefined" && Object.hasOwn(user_object.val().effects, user_object.val().active_effect) && user_object.val().effects[user_object.val().active_effect] ? user_object.val().active_effect : false,
                 })
             }
@@ -1242,7 +1242,7 @@ function sendMessage() {
                         whisper: whispered_user,
                         channel: (sessionStorage.getItem("channel") || "general"),
                         edited: false,
-                        time: (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0'),
+                        time: Date.now(),
                         effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
                     }).then(function() {
                         db.ref("users/" + username).update({

@@ -1727,7 +1727,7 @@ function changeChannel(channel) {
             } else if ((sessionStorage.getItem("channel") || "general") != channel) {
                 document.getElementById(`${channel}-notif`).innerHTML = "";
                 document.getElementById((sessionStorage.getItem("channel") || "general")).style.backgroundColor = null;
-                document.getElementById(channel).style.backgroundColor = "#42464d";
+                document.getElementById(channel).style.backgroundColor = "#a13705ff";
                 sessionStorage.setItem("channel", channel);
                 refreshChat(user_object, true);
             }
@@ -1809,7 +1809,7 @@ function setup() {
                 return;
             }
 
-            document.getElementById((sessionStorage.getItem("channel") || "general")).style.backgroundColor = "#42464d";
+            document.getElementById((sessionStorage.getItem("channel") || "general")).style.backgroundColor = "#a13705ff";
 
             checkTrapped();
             checkActive();

@@ -1,5 +1,5 @@
 body {
-    background-color: #202225;
+    background-color: #FF5F1F;
     font-family: Arial;
     border-width: 0px;
 }
@@ -8,7 +8,7 @@ button {
     cursor: pointer;
     box-shadow: 2px 5px 0px 0px rgb(0,0,0);
     border-radius: 10px;
-    background-color: #5864f1;
+    background-color: #FF5F1F;
     color: white;
     font-size: 15;
 }
@@ -47,7 +47,7 @@ button:active {
 }
 
 .channel-list {
-    background-color: #2f3135;
+    background-color: hsl(14, 86%, 45%);
     width: 20%;
     height: 100%;
     border-radius: 10px;
@@ -71,7 +71,7 @@ button:active {
     margin: 5%;
     padding-right: 3%;
     padding-left: 3%;
-    color: rgb(82, 162, 236);
+    color: #cf4217;
     background-color: black;
     height: 56%;
     overflow: hidden;
@@ -85,7 +85,7 @@ button:active {
 
 .channel {
     border-radius: 5px;
-    background-color: #2f3135;
+    background-color: #b94007;
     width: 90%;
     padding-top: 5px;
     padding-bottom: 5px;
@@ -100,7 +100,7 @@ button:active {
 .channel-button {
     width: auto;
     vertical-align: middle;
-    color: #8d9297;
+    color: #812b09;
     text-decoration: none;
     float: left;
 }
@@ -109,7 +109,7 @@ button:active {
     width: auto;
     font-size: 15px;
     vertical-align: middle;
-    color: #8d9297;
+    color: #812b09;
     text-decoration: none;
     float: left;
 }
@@ -129,11 +129,11 @@ button:active {
 }
 
 .channel:hover {
-    background-color: #42464d;
+    background-color: #923104;
 }
 
 .category:hover {
-    background-color: #42464d;
+    background-color: #923104;
 }
 
 a {
@@ -141,7 +141,7 @@ a {
 }
 
 .member-list {
-    background-color: #2f3135;
+    background-color: #cf4217;
     width: 19%;
     height: 98%;
     float: right;
@@ -153,7 +153,7 @@ a {
 }
 
 .member {
-    color: white;
+    color: #812b09;
     padding-bottom: 3%;
     padding-left: 5%;
     display: inline-flex;
@@ -184,14 +184,14 @@ a {
     height: 100%;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    background-color: #35393f;
+    background-color: #cf4217;
     float: left;
 }
 
 .profile {
     height: 9.6%;
     width: 100%;
-    background-color: #292b2f;
+    background-color: #a3310e;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
@@ -200,7 +200,7 @@ a {
     border-radius: 10px;
     height: 7.5%;
     width: 100%;
-    background-color: #2f3135;
+    background-color: #a3310e;
 }
 
 .message-area {
@@ -212,13 +212,13 @@ a {
 .text-area {
     height: 7.5%;
     width: 100%;
-    background-color: #2f3135;
+    background-color: #a3310e;
 }
 
 .box-message {
     font-size: 70%;
     font-family: Arial;
-    background-color: #292b2f;
+    background-color: #771d02;
     border-radius: 30px;
     width: 85%;
     height: 70%;
@@ -240,7 +240,7 @@ a {
 
 .send-message {
     color: white;
-    background-color: #5864f1;
+    background-color: #d69811;
     border-radius: 10px;
     margin-right: 2%;
     width: 4.5%;
@@ -348,7 +348,7 @@ a {
 .login-button {
     width: 90%;
     height: 50px;
-    background-color: #5864f1;
+    background-color: #d69811;
     border-radius: 10px;
     color: white;
     margin-top: 1%;
@@ -386,7 +386,7 @@ textarea:focus {
 }
 
 .profile-button {
-    background-color: #5864f1;
+    background-color: #d69811;
     border-radius: 10px;
     color: white;
     margin-left: 5px;
@@ -416,7 +416,7 @@ textarea:focus {
 
 .sidebar-button {
     max-width: 90%;
-    background-color: #5864f1;
+    background-color: #d69811;
     text-align: center;
     border-radius: 15%;
     margin-bottom: 10%;
@@ -636,7 +636,7 @@ iframe {
 .send-image {
     float: left;
     color: white;
-    background-color: #5864f1;
+    background-color: #d69811;
     border-radius: 10px;
     margin-left: 1.5%;
     width: 4.5%;

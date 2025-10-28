@@ -9,6 +9,7 @@ var global_mult, global_autoclicker, global_stolenauto, global_stolenmult, globa
 var global_break = false;
 var global_autoindex = 0;
 var global_leaderindex = 0;
+var global_sellcheck = false;
 
 function play() {
     const music = document.getElementById("bg-music");
@@ -367,16 +368,22 @@ function buyAuto() {
 }
 
 function sellAuto() {
-    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        var price = Math.round((100 * 1.2 ** (user_object.val().autoclicker - 1 || 0)) * 0.9);
+    if (!global_sellcheck) {
+        global_sellcheck = true;
 
-        if (user_object.val().autoclicker > 0) {
-            db.ref(`users/${getUsername()}`).update({
-                money: firebase.database.ServerValue.increment(price),
-                autoclicker: firebase.database.ServerValue.increment(-1)
-            })
-        }
-    })
+        db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+            var price = Math.round((100 * 1.2 ** (user_object.val().autoclicker - 1 || 0)) * 0.9);
+
+            if (user_object.val().autoclicker > 0) {
+                db.ref(`users/${getUsername()}`).update({
+                    money: firebase.database.ServerValue.increment(price),
+                    autoclicker: firebase.database.ServerValue.increment(-1)
+                }).finally(() => {
+                    global_sellcheck = false;
+                })
+            }
+        })
+    }
 }
 
 function buyMult() {
@@ -400,16 +407,22 @@ function buyMult() {
 }
 
 function sellMult() {
-    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        var price = Math.round((250 * 1.4 ** (user_object.val().mult - 2 || 0)) * 0.9);
+    if (!global_sellcheck) {
+        global_sellcheck = true;
 
-        if (user_object.val().mult > 1) {
-            db.ref(`users/${getUsername()}`).update({
-                money: firebase.database.ServerValue.increment(price),
-                autoclicker: firebase.database.ServerValue.increment(-1)
-            })
-        }
-    })
+        db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+            var price = Math.round((250 * 1.4 ** (user_object.val().mult - 2 || 0)) * 0.9);
+
+            if (user_object.val().mult > 1) {
+                db.ref(`users/${getUsername()}`).update({
+                    money: firebase.database.ServerValue.increment(price),
+                    autoclicker: firebase.database.ServerValue.increment(-1)
+                }).finally(() => {
+                    global_sellcheck = false;
+                })
+            }
+        })
+    }
 }
 
 function Gambling() {

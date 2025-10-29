@@ -30,7 +30,7 @@ function getChats() {
             const y_scroll = textarea.scrollTop;
             var message_height = 0;
 
-            if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin > data.val().admin) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
+            if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin >= 9000) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
                 if (everyoneRevealed) {
                     // var username = data.val().real_name || "[SERVER]";
                 } else {

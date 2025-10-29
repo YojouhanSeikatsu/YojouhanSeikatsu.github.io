@@ -28,9 +28,9 @@ function getChats() {
             const index = globalMessages.length - 1;
             const textarea = document.getElementById('textarea');
             const y_scroll = textarea.scrollTop;
-            var message_height
+            var message_height = 0;
 
-            if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin > 0) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
+            if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin > data.val().admin) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
                 if (everyoneRevealed) {
                     // var username = data.val().real_name || "[SERVER]";
                 } else {
@@ -212,7 +212,7 @@ function getChats() {
 
                 textarea.appendChild(messageElement);
 
-                message_height = messageElement.offsetHeight;
+                message_height = messageElement.offsetHeight || 0;
 
                 if (data.val().display_name == "[VOTING]") {
                     checkVoting();
@@ -1544,6 +1544,14 @@ function sendMessage() {
                 }
                 document.getElementById("text-box").value = "";
                 return;
+            } else if (message.startsWith("!verify @")) {
+                db.ref(`users/${message.substring(9)}`).update({
+                    forceverify: true
+                })
+            } else if (message.startsWith("!unverify @")) {
+                db.ref(`users/${message.substring(9)}`).update({
+                    forceverify: false
+                })
             } else if (message.startsWith("!") && message.length > 3) {
                 alert("That is not an existing command!");
                 document.getElementById("text-box").value = "";

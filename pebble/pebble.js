@@ -345,7 +345,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
 
     var obj = user_data.val();
     globalMessages.forEach(function(data, index) {
-        if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin > 0) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
+        if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin >= 9000) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
             if (everyoneRevealed) {
                 // var username = data.val().real_name || "[SERVER]";
             } else {

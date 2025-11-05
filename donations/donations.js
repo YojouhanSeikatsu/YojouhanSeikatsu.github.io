@@ -416,7 +416,7 @@ function sellMult() {
             if (user_object.val().mult > 1) {
                 db.ref(`users/${getUsername()}`).update({
                     money: firebase.database.ServerValue.increment(price),
-                    autoclicker: firebase.database.ServerValue.increment(-1)
+                    mult: firebase.database.ServerValue.increment(-1)
                 }).finally(() => {
                     global_sellcheck = false;
                 })

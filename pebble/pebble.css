@@ -1,3 +1,8 @@
+@font-face {
+    font-family: undertale-papyrus;
+    src: url("../images/papyrus-font-undertale.ttf") format('woff');
+}
+
 body {
     background-color: #202225;
     font-family: Arial;
@@ -670,6 +675,29 @@ iframe {
     width: 97%;
     padding: 0.8em;
     border-radius: 12px;
+}
+
+#papyrus {
+    float: left;
+    vertical-align: middle;
+    margin-top: 50%;
+    margin-bottom: 50%;
+}
+
+#papyrus-text {
+    width: 97.5%;
+    background-color: black;
+    border-style: solid;
+    border-width: 0.2em;
+    font-size: 100%;
+    border-color: white;
+    font-family: undertale-papyrus;
+    padding-left: 2.5%;
+    text-align: left;
+    display: grid;
+    grid-template-columns: max-content auto;
+    column-gap: 3%;
+    align-items: center;
 }
 
 @keyframes spin{

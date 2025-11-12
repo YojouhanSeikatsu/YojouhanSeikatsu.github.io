@@ -180,6 +180,10 @@ function getChats() {
                     return "\\[" + p1.replace(/\n/g, " ") + "\\]";
                 });
 
+                if (data.val().effect === 3) {
+                    message = message.toUpperCase();
+                }
+
                 messageContent.innerHTML = convertToHTML(message);
 
                 if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
@@ -204,6 +208,14 @@ function getChats() {
                     messageElement.appendChild(textContent);
                 } else if (data.val().effect === 2) {
                     messageContent.style.color = "yellow";
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().effect === 3) {
+                    var papyrus = document.createElement("img");
+                    papyrus.src = "../images/papyrus_neutral.png";
+                    papyrus.setAttribute("id", "papyrus");
+                    messageContent.prepend(papyrus);
+
+                    messageContent.setAttribute("id", "papyrus-text");
                     messageElement.appendChild(messageContent);
                 } else {
                     messageElement.appendChild(messageContent);
@@ -495,6 +507,10 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 return "\\[" + p1.replace(/\n/g, " ") + "\\]";
             });
 
+            if (data.val().effect === 3) {
+                message = message.toUpperCase();
+            }
+
             messageContent.innerHTML = convertToHTML(message);
 
             if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
@@ -519,6 +535,14 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 messageElement.appendChild(textContent);
             } else if (data.val().effect === 2) {
                 messageContent.style.color = "yellow";
+                messageElement.appendChild(messageContent);
+            } else if (data.val().effect === 3) {
+                var papyrus = document.createElement("img");
+                papyrus.src = "../images/papyrus_neutral.png";
+                papyrus.setAttribute("id", "papyrus");
+                messageContent.prepend(papyrus);
+
+                messageContent.setAttribute("id", "papyrus-text");
                 messageElement.appendChild(messageContent);
             } else {
                 messageElement.appendChild(messageContent);
@@ -2041,6 +2065,19 @@ function effectMenu() {
                     <div class="message-text" style="color: yellow">Admin ${getUsername()} has joined the chat<span style="visibility: hidden;">@${getUsername()}</span></div>
                 </div><br><br>
                 Unlock Requirement: Have 1 or more admin levels     <button onclick="${user_object.val().active_effect === 2 ? "equipEffect('remove')" : "equipEffect(2)"}">${user_object.val().active_effect === 2 ? "Unequip" : "Equip"}</button>
+            </div>
+
+            <br><hr>
+
+            <div>
+                <p style="font-family: undertale-papyrus;">Papyrus</p><br><br>
+                <div id="message">
+                    <div class="message-text" id="papyrus-text">
+                        <img id="papyrus" src="../images/papyrus_neutral.png">
+                        <p>NYEH HEH HEH!</p>
+                    </div>
+                </div><br><br>
+                Unlock Requirement: Be the first person to donate more than $10     <button onclick="${user_object.val().active_effect === 3 ? "equipEffect('remove')" : "equipEffect(3)"}">${user_object.val().active_effect === 3 ? "Unequip" : "Equip"}</button>
             </div>
 
             <br><hr>

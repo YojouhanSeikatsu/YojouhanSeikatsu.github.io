@@ -217,6 +217,9 @@ function getChats() {
 
                     messageContent.setAttribute("id", "papyrus-text");
                     messageElement.appendChild(messageContent);
+                } else if (data.val().effect === 4) {
+                    messageContent.setAttribute("id", "fuyukai");
+                    messageElement.appendChild(messageContent);
                 } else {
                     messageElement.appendChild(messageContent);
                 }
@@ -543,6 +546,9 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 messageContent.prepend(papyrus);
 
                 messageContent.setAttribute("id", "papyrus-text");
+                messageElement.appendChild(messageContent);
+            } else if (data.val().effect === 4) {
+                messageContent.setAttribute("id", "fuyukai");
                 messageElement.appendChild(messageContent);
             } else {
                 messageElement.appendChild(messageContent);
@@ -2077,7 +2083,20 @@ function effectMenu() {
                         <p>NYEH HEH HEH!</p>
                     </div>
                 </div><br><br>
-                Unlock Requirement: Be the first person to donate more than $10     <button onclick="${user_object.val().active_effect === 3 ? "equipEffect('remove')" : "equipEffect(3)"}">${user_object.val().active_effect === 3 ? "Unequip" : "Equip"}</button>
+                Unlock Requirement: Be the first person to donate more than or equal to $15     <button onclick="${user_object.val().active_effect === 3 ? "equipEffect('remove')" : "equipEffect(3)"}">${user_object.val().active_effect === 3 ? "Unequip" : "Equip"}</button>
+            </div>
+
+            <br><hr>
+
+            <div>
+                Best2playercoolmathgame<br><br>
+                <div id="message">
+                    <div class="username" style="font-weight: bold; color: yellow;">[SERVER]</div>
+                    <div class="message-text" id="fuyukai">
+                        ${getUsername()} has joined the chat<span style="visibility: hidden;">@${getUsername()}</span>
+                    </div>
+                </div><br><br>
+                Unlock Requirement: Be the first person to donate more than $5 but less than $10     <button onclick="${user_object.val().active_effect === 4 ? "equipEffect('remove')" : "equipEffect(4)"}">${user_object.val().active_effect === 4 ? "Unequip" : "Equip"}</button>
             </div>
 
             <br><hr>

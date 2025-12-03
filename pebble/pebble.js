@@ -2779,15 +2779,3 @@ window.onload = function() {
         alert(err);
     }
 };
-
-function openConsole() {
-    showPopUp("Console", `
-        <input type="text" style="color:white;width:100%" id="consoleInput">
-        <button onclick="submitConsole()">Enter</button>
-    `);
-}
-
-function submitConsole() {
-    eval(document.getElementById("consoleInput").value);
-    document.getElementById("consoleInput").value = "";
-}

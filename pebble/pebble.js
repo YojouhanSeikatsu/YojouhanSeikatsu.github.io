@@ -12,9 +12,8 @@ var loadSubsequentMessages = false;
 var firstLoad = true;
 var timeoutId = false;
 var clearchatId = false;
-let images
-let db;
-let auth;
+var globalActive;
+let db, auth, storage;
 
 function getChats() {
     document.getElementById("getChatsButton").remove();
@@ -57,6 +56,14 @@ function getChats() {
                     messageImg.setAttribute("class", "profile-img");
                     messageElement.appendChild(messageImg);
                 }
+                // else if (data.val().admin >= 2 && data.val().profileimage && (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited)) {
+                //     storage.ref(`${data.val().name}/profile/${data.val().profileimage}`).getDownloadURL().then((url) => {
+                //         var messageImg = document.createElement("img");
+                //         messageImg.src = url;
+                //         messageImg.setAttribute("class", "profile-img");
+                //         messageElement.prepend(messageImg);
+                //     })
+                // }
 
                 var timeElement = document.createElement("div");
                 var currTime;
@@ -136,11 +143,7 @@ function getChats() {
                                 textBox.focus();
                             } else {
                                 editButton.innerHTML = "🗙";
-                                db.ref(`chats/${globalMessages[index].key}/message`).once("value", function(edit_message) {
-                                    textBox.value = unsanitize(edit_message.val());
-                                })
-                                textBox.focus();
-                                localStorage.setItem("editing", globalMessages[index].key);
+                                db.ref(`chats/${globalMessages[index].key}/message`).remove()
                             }
                         });
 
@@ -164,64 +167,96 @@ function getChats() {
                 var messageContent = document.createElement("div");
                 messageContent.setAttribute("class", "message-text");
 
-                if (message.match(/src="([^"]+)"/)) {
-                    var messageImage = document.createElement("img");
-                    messageImage.src = message.match(/src="([^"]+)"/)[1];
-                    messageContent.height = messageImage.height;
-                }
-
                 // Fix escaped LaTeX delimiters
                 // message = message
                 //     .replace(/\\\\\(/g, "\\(")   // \\( -> \(
                 //     .replace(/\\\\\)/g, "\\)")   // \\) -> \)
                 //     .replace(/\\\\\[/g, "\\[")   // \\[ -> \[
                 //     .replace(/\\\\\]/g, "\\]");  // \\] -> \]
-                message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
-                    return "\\[" + p1.replace(/\n/g, " ") + "\\]";
-                });
-
-                if (data.val().effect === 3) {
-                    message = message.toUpperCase();
-                }
-
-                messageContent.innerHTML = convertToHTML(message);
-
-                if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
-                    messageContent.setAttribute("id", "ping-text");
-                }
-
-                if (data.val().removed && data.val().admin >= obj.admin) {
-                    messageContent.innerHTML = `<i><b>REMOVED BY ${data.val().removed}</b></i><span style="display: none">@${data.val().removed} @${data.val().name}</span>`;
-                } else if (data.val().removed && data.val().admin < obj.admin) {
-                    messageContent.innerHTML = `Removed by ${data.val().removed}: ${message}`;
-                }
-
-                if (data.val().effect === 0) {
-                    var textContent = document.createElement("div");
-                    messageElement.appendChild(textContent);
-                    textContent.setAttribute("id", "god-border");
-                    // messageContent.innerHTML = "";
-                    textContent.appendChild(messageContent);
-                    
-                    messageContent.setAttribute("id", "god-text");
-                    messageContent.setAttribute("class", "");
-                    messageElement.appendChild(textContent);
-                } else if (data.val().effect === 2) {
-                    messageContent.style.color = "yellow";
+                if (data.val().type === "image") {
+                    var imageContent = document.createElement("img");
+                    imageContent.style.maxWidth = "70%";
+                    imageContent.style.maxHeight = "30vh";
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        imageContent.src = url;
+                    })
+                    messageContent.appendChild(imageContent);
                     messageElement.appendChild(messageContent);
-                } else if (data.val().effect === 3) {
-                    var papyrus = document.createElement("img");
-                    papyrus.src = "../images/papyrus_neutral.png";
-                    papyrus.setAttribute("id", "papyrus");
-                    messageContent.prepend(papyrus);
-
-                    messageContent.setAttribute("id", "papyrus-text");
+                } else if (data.val().type === "video") {
+                    var videoContent = document.createElement("video");
+                    videoContent.style.maxWidth = "70%";
+                    videoContent.style.maxHeight = "30vh";
+                    videoContent.controls = true;
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        videoContent.src = url;
+                    })
+                    messageContent.appendChild(videoContent);
                     messageElement.appendChild(messageContent);
-                } else if (data.val().effect === 4) {
-                    messageContent.setAttribute("id", "fuyukai");
+                } else if (data.val().type === "audio") {
+                    var audioContent = document.createElement("audio");
+                    // var sourceContent = document.createElement("source");
+                    // audioContent.appendChild(sourceContent);
+                    audioContent.controls = true;
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        audioContent.src = url;
+                    })
+                    messageContent.appendChild(audioContent);
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().type === "file") {
+                    var fileContent = document.createElement("a");
+                    var buttonContent = document.createElement("button");
+                    fileContent.download = true;
+                    storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
+                        buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name}`;
+                    })
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        fileContent.href = url;
+                    })
+                    fileContent.appendChild(buttonContent);
+                    messageContent.appendChild(fileContent);
                     messageElement.appendChild(messageContent);
                 } else {
-                    messageElement.appendChild(messageContent);
+                    message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
+                        return "\\[" + p1.replace(/\n/g, " ") + "\\]";
+                    });
+
+                    if (data.val().effect === 3) {
+                        message = message.toUpperCase();
+                    }
+
+                    messageContent.innerHTML = convertToHTML(message);
+
+                    if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
+                        messageContent.setAttribute("id", "ping-text");
+                    }
+
+                    if (data.val().effect === 0) {
+                        var textContent = document.createElement("div");
+                        messageElement.appendChild(textContent);
+                        textContent.setAttribute("id", "god-border");
+                        // messageContent.innerHTML = "";
+                        textContent.appendChild(messageContent);
+                        
+                        messageContent.setAttribute("id", "god-text");
+                        messageContent.setAttribute("class", "");
+                        messageElement.appendChild(textContent);
+                    } else if (data.val().effect === 2) {
+                        messageContent.style.color = "yellow";
+                        messageElement.appendChild(messageContent);
+                    } else if (data.val().effect === 3) {
+                        var papyrus = document.createElement("img");
+                        papyrus.src = "../images/papyrus_neutral.png";
+                        papyrus.setAttribute("id", "papyrus");
+                        messageContent.prepend(papyrus);
+
+                        messageContent.setAttribute("id", "papyrus-text");
+                        messageElement.appendChild(messageContent);
+                    } else if (data.val().effect === 4) {
+                        messageContent.setAttribute("id", "fuyukai");
+                        messageElement.appendChild(messageContent);
+                    } else {
+                        messageElement.appendChild(messageContent);
+                    }
                 }
 
 
@@ -494,64 +529,86 @@ function refreshChat(user_data, change_channel = false, first = false) {
             var messageContent = document.createElement("div");
             messageContent.setAttribute("class", "message-text");
 
-            if (message.match(/src="([^"]+)"/)) {
-                var messageImage = document.createElement("img");
-                messageImage.src = message.match(/src="([^"]+)"/)[1];
-                messageContent.height = messageImage.height;
-            }
-
             // Fix escaped LaTeX delimiters
             // message = message
             //     .replace(/\\\\\(/g, "\\(")   // \\( -> \(
             //     .replace(/\\\\\)/g, "\\)")   // \\) -> \)
             //     .replace(/\\\\\[/g, "\\[")   // \\[ -> \[
             //     .replace(/\\\\\]/g, "\\]");  // \\] -> \]
-            message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
-                return "\\[" + p1.replace(/\n/g, " ") + "\\]";
-            });
-
-            if (data.val().effect === 3) {
-                message = message.toUpperCase();
-            }
-
-            messageContent.innerHTML = convertToHTML(message);
-
-            if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
-                messageContent.setAttribute("id", "ping-text");
-            }
-
-            if (data.val().removed && data.val().admin >= obj.admin) {
-                messageContent.innerHTML = `<i><b>REMOVED BY ${data.val().removed}</b></i><span style="display: none">@${data.val().removed} @${data.val().name}</span>`;
-            } else if (data.val().removed && data.val().admin < obj.admin) {
-                messageContent.innerHTML = `Removed by ${data.val().removed}: ${message}`;
-            }
-
-            if (data.val().effect === 0) {
-                var textContent = document.createElement("div");
-                messageElement.appendChild(textContent);
-                textContent.setAttribute("id", "god-border");
-                // messageContent.innerHTML = "";
-                textContent.appendChild(messageContent);
-                
-                messageContent.setAttribute("id", "god-text");
-                messageContent.setAttribute("class", "");
-                messageElement.appendChild(textContent);
-            } else if (data.val().effect === 2) {
-                messageContent.style.color = "yellow";
+            if (data.val().type === "image") {
+                var imageContent = document.createElement("img");
+                imageContent.style.maxWidth = "70%";
+                imageContent.style.maxHeight = "30vh";
+                storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                    imageContent.src = url;
+                })
+                messageContent.appendChild(imageContent);
                 messageElement.appendChild(messageContent);
-            } else if (data.val().effect === 3) {
-                var papyrus = document.createElement("img");
-                papyrus.src = "../images/papyrus_neutral.png";
-                papyrus.setAttribute("id", "papyrus");
-                messageContent.prepend(papyrus);
-
-                messageContent.setAttribute("id", "papyrus-text");
+            } else if (data.val().type === "video") {
+                var videoContent = document.createElement("video");
+                videoContent.style.maxWidth = "70%";
+                videoContent.style.maxHeight = "30vh";
+                videoContent.controls = true;
+                storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                    videoContent.src = url;
+                })
+                messageContent.appendChild(videoContent);
                 messageElement.appendChild(messageContent);
-            } else if (data.val().effect === 4) {
-                messageContent.setAttribute("id", "fuyukai");
+            } else if (data.val().type === "file") {
+                var fileContent = document.createElement("a");
+                var buttonContent = document.createElement("button");
+                fileContent.download = true;
+                storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
+                    buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name}`;
+                })
+                storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                    fileContent.href = url;
+                })
+                fileContent.appendChild(buttonContent);
+                messageContent.appendChild(fileContent);
                 messageElement.appendChild(messageContent);
             } else {
-                messageElement.appendChild(messageContent);
+                message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
+                    return "\\[" + p1.replace(/\n/g, " ") + "\\]";
+                });
+
+                if (data.val().effect === 3) {
+                    message = message.toUpperCase();
+                }
+
+                messageContent.innerHTML = convertToHTML(message);
+
+                if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
+                    messageContent.setAttribute("id", "ping-text");
+                }
+
+                if (data.val().effect === 0) {
+                    var textContent = document.createElement("div");
+                    messageElement.appendChild(textContent);
+                    textContent.setAttribute("id", "god-border");
+                    // messageContent.innerHTML = "";
+                    textContent.appendChild(messageContent);
+                    
+                    messageContent.setAttribute("id", "god-text");
+                    messageContent.setAttribute("class", "");
+                    messageElement.appendChild(textContent);
+                } else if (data.val().effect === 2) {
+                    messageContent.style.color = "yellow";
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().effect === 3) {
+                    var papyrus = document.createElement("img");
+                    papyrus.src = "../images/papyrus_neutral.png";
+                    papyrus.setAttribute("id", "papyrus");
+                    messageContent.prepend(papyrus);
+
+                    messageContent.setAttribute("id", "papyrus-text");
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().effect === 4) {
+                    messageContent.setAttribute("id", "fuyukai");
+                    messageElement.appendChild(messageContent);
+                } else {
+                    messageElement.appendChild(messageContent);
+                }
             }
 
 
@@ -685,9 +742,19 @@ function displayMembers() {
 
                 mainElement.appendChild(adminLevel);
 
+                var awayElement = document.createElement("span");
                 var mutedElement = document.createElement("span");
                 var timedElement = document.createElement("span");
                 var trappedElement = document.createElement("span");
+
+                db.ref(`users/${username.username}/active`).on("value", function(muted_object) {
+                    if (muted_object.val() === "away") {
+                        awayElement.style.color = "Yellow";
+                        awayElement.innerHTML = "&nbsp;[Away]";
+                    } else {
+                        awayElement.innerHTML = "";
+                    }
+                })
 
                 db.ref(`users/${username.username}/muted`).on("value", function(muted_object) {
                     if (muted_object.val()) {
@@ -716,6 +783,7 @@ function displayMembers() {
                     }
                 })
 
+                memberElement.appendChild(awayElement);
                 memberElement.appendChild(mutedElement);
                 memberElement.appendChild(timedElement);
                 memberElement.appendChild(trappedElement);
@@ -1274,6 +1342,7 @@ function sendMessage() {
                         edited: false,
                         time: Date.now(),
                         effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
+                        // profileimage: obj.profileimage,
                     }).then(function() {
                         db.ref("users/" + username).update({
                             sleep: Date.now(),
@@ -1609,6 +1678,7 @@ function sendMessage() {
                     edited: false,
                     time: Date.now(),
                     effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
+                    // profileimage: obj.profileimage,
                 }).then(function() {
                     db.ref("users/" + username).update({
                         sleep: Date.now(),
@@ -1816,6 +1886,22 @@ function setup() {
                 }
             })
 
+            document.addEventListener("visibilitychange", function() {
+                db.ref(`users/${getUsername()}/activeoption`).once("value", function(active_object) {
+                    if (active_object.val() || typeof(active_object.val()) == "undefined") {
+                        if (document.hidden) {
+                            db.ref(`users/${getUsername()}`).update({
+                                active: "away",
+                            })
+                        } else {
+                            db.ref(`users/${getUsername()}`).update({
+                                active: true,
+                            })
+                        }
+                    }
+                })
+            })
+
             document.getElementById("text-box").addEventListener("input", () => {
                 resizeTextBox();
             });
@@ -1836,6 +1922,10 @@ function setup() {
                         const lastMessageTime = obj.sleep || 0;
                         const timePassed = Date.now() - lastMessageTime;
                         let params = new URLSearchParams(document.location.search);
+                        globalActive = obj.activeoption || typeof(obj.activeoption) == "undefined";
+                        if (globalActive) {
+                            document.getElementById("active-toggle").innerHTML = ' ✓';
+                        }
                         if ((!obj.muted && !(timePassed < messageSleep) && !obj.trapped) && !(JSON.parse(params.get("ignore")) || false) && !Object.hasOwn(admin.val(), obj.id)) {
                             sendServerMessage(obj.display_name + " (@" + getUsername() + ")" + " has joined the chat", true);
                         }
@@ -1932,6 +2022,23 @@ function announce() {
         document.getElementById("announce-toggle").innerHTML = ' ✓';
     } else {
         document.getElementById("announce-toggle").innerHTML = '';
+    }
+}
+
+function activeToggle() {
+    globalActive = !globalActive;
+    if (globalActive) {
+        document.getElementById("active-toggle").innerHTML = ' ✓';
+        db.ref(`users/${getUsername()}`).update({
+            active: true,
+            activeoption: true
+        })
+    } else {
+        document.getElementById("active-toggle").innerHTML = '';
+        db.ref(`users/${getUsername()}`).update({
+            active: false,
+            activeoption: false
+        })
     }
 }
 
@@ -2181,21 +2288,27 @@ function voteButton(choice) {
     })
 }
 
+function bytesToSize(bytes) {
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes == 0) return 'n/a';
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    if (i == 0) return bytes + ' ' + sizes[i];
+    return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+};
+
 function checkActive() {
-    db.ref(".info/connected").on("value", (snapshot) => {
-        db.ref(`other/admin_list`).once("value", function(admin) {
-            db.ref(`users/${getUsername()}`).once("value", function(object) {
-                if (snapshot.val() && object.exists()) {
-                    db.ref("users/" + getUsername()).update({
-                        active: (Object.hasOwn(admin.val(), object.val().id) ? false : true),
-                    }).then(
-                        displayMembers()
-                    )
-                    db.ref("users/" + getUsername()).onDisconnect().update({
-                        active: false,
-                    })
-                }
+    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+        if (user_object.val().activeoption || typeof(user_object.val().activeoption) == "undefined") {
+            db.ref(`users/${getUsername()}`).update({
+                active: true
+            }).then(() => {
+                displayMembers();
             })
+        } else {
+            displayMembers();
+        }
+        db.ref("users/" + getUsername()).onDisconnect().update({
+            active: false,
         })
     })
 }
@@ -2212,107 +2325,46 @@ function resizeTextBox() {
 }
 
 function imagePopup() {
-    showPopUp("Images",`
-        <img id="image1" style="max-width:40%;max-height:10vh"><button onclick="editImage(1)">Edit</button><button onclick="useImage(1)">Use</button><br>
-        <img id="image2" style="max-width:40%;max-height:10vh"><button onclick="editImage(2)">Edit</button><button onclick="useImage(2)">Use</button><br>
-        <img id="image3" style="max-width:40%;max-height:10vh"><button onclick="editImage(3)">Edit</button><button onclick="useImage(3)">Use</button><br>`)
-
-    if (typeof(images) == "undefined") {
-        db.ref(`userimages/${getUsername()}`).once("value", function(object) {
-            images = [(object.exists() ? (object.val().images.image1 || "../images/image_placeholder.jpg") : "../images/image_placeholder.jpg"), (object.exists() ? (object.val().images.image2 || "../images/image_placeholder.jpg") : "../images/image_placeholder.jpg"), (object.exists() ? (object.val().images.image3 || "../images/image_placeholder.jpg") : "../images/image_placeholder.jpg")]
-
-            document.getElementById("image1").src = images[0];
-            document.getElementById("image2").src = images[1];
-            document.getElementById("image3").src = images[2];
-        })
-    } else {
-        document.getElementById("image1").src = images[0];
-        document.getElementById("image2").src = images[1];
-        document.getElementById("image3").src = images[2];
-    }
+    showPopUp("Upload File",`
+        <input type="file" id="fileUpload">
+        <button onclick="submitImage()">Submit</button>`)
 }
 
-function checkImageURL(url, callback) {
-    const img = new Image();
-    
-    img.onload = function() {
-      callback(true);
-    };
-    
-    img.onerror = function() {
-      callback(false);
-    };
-    
-    img.src = url;
-  }
-
-function useImage(index) {
-    auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
-        fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/useImage", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({idtoken, index: index, channel: (sessionStorage.getItem("channel") || "general")})
-        }).then(response => response.json()).then(data => {
-            if (data.error) {
-                alert(data.error);
+function submitImage() {
+    var uploadTask = storage.ref(`${getUsername()}/${document.getElementById("fileUpload").files[0].name}`).put(document.getElementById("fileUpload").files[0]).then(() => {
+        db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+            var fileExtension = document.getElementById("fileUpload").files[0].name.split('.').pop();
+            var fileType;
+            if (["jpg", "gif", "webp", "png"].includes(fileExtension)) {
+                fileType = "image";
+            } else if (["mp3", "flac", "wav"].includes(fileExtension)) {
+                fileType = "audio";
+            } else if (["mp4", "webm"].includes(fileExtension)) {
+                fileType = "video";
+            } else {
+                fileType = "file";
             }
-        }).catch((error) => {
-            alert(error);
-        })
-    })
 
-    document.getElementById("popup").remove();
-}
-
-function editImage(index) {
-    document.getElementById("popupHeading").innerHTML = `Editing Image ${index}`;
-    document.getElementById("popupBody").innerHTML = `<img id="previewImage" src="${images[index - 1]}" style="max-width:40%;max-height:30vh"><br>URL: <input id="ImageURL" type="text" style="color:white;width:100%"><br><button onclick="imagePreview()">Preview Image</button><input type="file" id="imageUpload"><button onclick="submitImage(${index})">Submit</button><br><img src="../images/image_instructions.png" style="height:30%"><br>If you are having trouble getting the file size under 5MB, refer to this instruction on how you can use URLs to upload images`;
-    document.getElementById('imageUpload').addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function () {
-            const base64 = reader.result;
-            document.getElementById('ImageURL').value = base64;
-            imagePreview();
-        };
-        reader.readAsDataURL(file);
-    })
-}
-
-function imagePreview() {
-    document.getElementById("previewImage").src = document.getElementById("ImageURL").value;
-}
-
-function submitImage(index) {
-    checkImageURL(document.getElementById("ImageURL").value, function(isValid) {
-        if (isValid) {
-            auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
-                fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/submitImage", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({idtoken, index: index, image: document.getElementById("ImageURL").value, channel: (sessionStorage.getItem("channel") || "general")})
-                }).then(response => response.json()).then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        images[index - 1] = document.getElementById("ImageURL").value;
-                        document.getElementById("popup").remove();
-                        alert(data.message);
-                    }
-                }).catch((error) => {
-                    alert(error);
+            db.ref('chats/').push({
+                name: getUsername(),
+                message: document.getElementById("fileUpload").files[0].name,
+                admin: user_object.val().admin,
+                display_name: user_object.val().display_name,
+                removed: false,
+                type: fileType,
+                channel: (sessionStorage.getItem("channel") || "general"),
+                edited: false,
+                time: Date.now(),
+                effect: ((user_object.val().effects || false) && (user_object.val().effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
+                // profileimage: user_object.val().profileimage,
+            }).then(function() {
+                db.ref("users/" + username).update({
+                    sleep: Date.now(),
                 })
+                document.getElementById("popup").remove();
             })
-        } else {
-            alert(`Failed to load image`);
-        }
-    })
+        })
+    });
 }
 
 function getChatContext(userMessage, messageKey, username) {
@@ -2757,6 +2809,7 @@ window.onload = function() {
         firebase.initializeApp(config);
         db = firebase.database();
         auth = firebase.auth();
+        storage = firebase.storage();
 
         const script = document.createElement('script');
         script.src = '../config.js';

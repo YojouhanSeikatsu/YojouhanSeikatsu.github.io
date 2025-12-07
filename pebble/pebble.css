@@ -416,6 +416,8 @@ textarea:focus {
 .profile-img {
     max-width: 3%;
     height: 3%;
+    object-fit: contain;
+    vertical-align: middle;
 }
 
 .sidebar {

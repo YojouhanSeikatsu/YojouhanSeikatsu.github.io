@@ -2327,10 +2327,11 @@ function resizeTextBox() {
 function imagePopup() {
     showPopUp("Upload File",`
         <input type="file" id="fileUpload">
-        <button onclick="submitImage()">Submit</button>`)
+        <button onclick="submitImage()" id="submitImageButton">Submit</button>`)
 }
 
 function submitImage() {
+    document.getElementById("submitImageButton").disabled = true;
     var uploadTask = storage.ref(`${getUsername()}/${document.getElementById("fileUpload").files[0].name}`).put(document.getElementById("fileUpload").files[0]).then(() => {
         db.ref(`users/${getUsername()}`).once("value", function(user_object) {
             var fileExtension = document.getElementById("fileUpload").files[0].name.split('.').pop();
@@ -2358,7 +2359,7 @@ function submitImage() {
                 effect: ((user_object.val().effects || false) && (user_object.val().effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
                 // profileimage: user_object.val().profileimage,
             }).then(function() {
-                db.ref("users/" + username).update({
+                db.ref("users/" + getUsername()).update({
                     sleep: Date.now(),
                 })
                 document.getElementById("popup").remove();

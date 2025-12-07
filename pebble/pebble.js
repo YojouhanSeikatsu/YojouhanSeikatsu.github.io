@@ -207,7 +207,7 @@ function getChats() {
                     var buttonContent = document.createElement("button");
                     fileContent.download = true;
                     storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
-                        buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name}`;
+                        buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name.length > 50 ? sanitize(metadata.name.slice(0, 50)) + "..." : sanitize(metadata.name)}`;
                     })
                     storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                         fileContent.href = url;
@@ -559,7 +559,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 var buttonContent = document.createElement("button");
                 fileContent.download = true;
                 storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
-                    buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name}`;
+                    buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name.length > 50 ? sanitize(metadata.name.slice(0, 47)) + "..." : sanitize(metadata.name)}`;
                 })
                 storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                     fileContent.href = url;

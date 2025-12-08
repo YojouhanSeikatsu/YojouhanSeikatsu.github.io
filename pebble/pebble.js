@@ -1898,7 +1898,7 @@ function setup() {
 
             document.addEventListener("visibilitychange", function() {
                 db.ref(`users/${getUsername()}/activeoption`).once("value", function(active_object) {
-                    if (active_object.val() || typeof(active_object.val()) == "undefined") {
+                    if (active_object.val() || !active_object.exists()) {
                         if (document.hidden) {
                             db.ref(`users/${getUsername()}`).update({
                                 active: "away",

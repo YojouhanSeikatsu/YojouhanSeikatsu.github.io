@@ -1035,7 +1035,6 @@ function sendServerMessage(message, join=false) {
                     admin: user_object.val().admin,
                     display_name: "[SERVER]",
                     channel: (sessionStorage.getItem("channel") || "general"),
-                    removed: false,
                     edited: false,
                     time: Date.now(),
                     effect: typeof(user_object.val().active_effect) != "undefined" && join && typeof(user_object.val().effects) != "undefined" && Object.hasOwn(user_object.val().effects, user_object.val().active_effect) && user_object.val().effects[user_object.val().active_effect] ? user_object.val().active_effect : false,
@@ -1355,7 +1354,6 @@ function sendMessage() {
                         message: "Whisper to @" + whispered_user + ": " + message.substring(10 + whispered_user.length),
                         admin: obj.admin,
                         display_name: obj.display_name,
-                        removed: false,
                         whisper: whispered_user,
                         channel: (sessionStorage.getItem("channel") || "general"),
                         edited: false,
@@ -1692,7 +1690,6 @@ function sendMessage() {
                     message: message,
                     admin: obj.admin,
                     display_name: obj.display_name,
-                    removed: false,
                     channel: (sessionStorage.getItem("channel") || "general"),
                     edited: false,
                     time: Date.now(),
@@ -2370,7 +2367,6 @@ function submitImage() {
                 message: document.getElementById("fileUpload").files[0].name,
                 admin: user_object.val().admin,
                 display_name: user_object.val().display_name,
-                removed: false,
                 type: fileType,
                 channel: (sessionStorage.getItem("channel") || "general"),
                 edited: false,
@@ -2384,6 +2380,8 @@ function submitImage() {
                 document.getElementById("popup").remove();
             })
         })
+    }).catch((error) => {
+        alert(error);
     });
 }
 

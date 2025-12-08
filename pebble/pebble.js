@@ -554,6 +554,16 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 })
                 messageContent.appendChild(videoContent);
                 messageElement.appendChild(messageContent);
+            } else if (data.val().type === "audio") {
+                var audioContent = document.createElement("audio");
+                // var sourceContent = document.createElement("source");
+                // audioContent.appendChild(sourceContent);
+                audioContent.controls = true;
+                storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                    audioContent.src = url;
+                })
+                messageContent.appendChild(audioContent);
+                messageElement.appendChild(messageContent);
             } else if (data.val().type === "file") {
                 var fileContent = document.createElement("a");
                 var buttonContent = document.createElement("button");

@@ -116,10 +116,7 @@ function getChats() {
                             trashButton.innerHTML = "🗑️️";
                             trashButton.setAttribute("id", "delete-button");
                             trashButton.addEventListener("click", function() {
-                                db.ref("chats/" + globalMessages[index].key).update({
-                                    removed: getUsername(),
-                                    admin: obj.admin,
-                                });
+                                db.ref("chats/" + globalMessages[index].key).remove();
                             })
                             messageElement.appendChild(trashButton);
                         }, 100);
@@ -143,7 +140,11 @@ function getChats() {
                                 textBox.focus();
                             } else {
                                 editButton.innerHTML = "🗙";
-                                db.ref(`chats/${globalMessages[index].key}/message`).remove()
+                                db.ref(`chats/${globalMessages[index].key}/message`).once("value", function(edit_message) {
+                                    textBox.value = unsanitize(edit_message.val());
+                                })
+                                textBox.focus();
+                                localStorage.setItem("editing", globalMessages[index].key);
                             }
                         });
 
@@ -474,10 +475,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
                         trashButton.innerHTML = "🗑️️";
                         trashButton.setAttribute("id", "delete-button");
                         trashButton.addEventListener("click", function() {
-                            db.ref("chats/" + globalMessages[index].key).update({
-                                removed: getUsername(),
-                                admin: obj.admin,
-                            });
+                            db.ref("chats/" + globalMessages[index].key).remove();
                         })
                         messageElement.appendChild(trashButton);
                     }, 100);

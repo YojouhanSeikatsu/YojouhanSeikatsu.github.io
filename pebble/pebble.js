@@ -906,9 +906,19 @@ function redisplayMembers() {
 
         mainElement.appendChild(adminLevel);
 
+        var awayElement = document.createElement("span");
         var mutedElement = document.createElement("span");
         var timedElement = document.createElement("span");
         var trappedElement = document.createElement("span");
+
+        db.ref(`users/${username.username}/active`).on("value", function(muted_object) {
+            if (muted_object.val() === "away") {
+                awayElement.style.color = "Yellow";
+                awayElement.innerHTML = "&nbsp;[Away]";
+            } else {
+                awayElement.innerHTML = "";
+            }
+        })
 
         db.ref(`users/${username.username}/muted`).once("value", function(muted_object) {
             if (muted_object.val()) {
@@ -937,6 +947,7 @@ function redisplayMembers() {
             }
         })
 
+        memberElement.appendChild(awayElement);
         memberElement.appendChild(mutedElement);
         memberElement.appendChild(timedElement);
         memberElement.appendChild(trappedElement);

@@ -2313,18 +2313,22 @@ function bytesToSize(bytes) {
 };
 
 function checkActive() {
-    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-        if (user_object.val().activeoption || typeof(user_object.val().activeoption) == "undefined") {
-            db.ref(`users/${getUsername()}`).update({
-                active: true
-            }).then(() => {
-                displayMembers();
-            })
-        } else {
-            displayMembers();
-        }
-        db.ref("users/" + getUsername()).onDisconnect().update({
-            active: false,
+    db.ref(".info/connected").on("value", (snapshot) => {
+        db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+            if (snapshot.val() && user_object.exists()) {
+                if (user_object.val().activeoption || typeof(user_object.val().activeoption) == "undefined") {
+                    db.ref(`users/${getUsername()}`).update({
+                        active: true
+                    }).then(() => {
+                        displayMembers();
+                    })
+                } else {
+                    displayMembers();
+                }
+                db.ref("users/" + getUsername()).onDisconnect().update({
+                    active: false,
+                })
+            }
         })
     })
 }

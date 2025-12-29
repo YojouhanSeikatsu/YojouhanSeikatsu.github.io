@@ -180,6 +180,10 @@ function getChats() {
                     imageContent.style.maxHeight = "30vh";
                     storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                         imageContent.src = url;
+                    }).catch((error) => {
+                        imageContent.src = "../images/504708-200.png";
+                        messageContent.innerHTML += "Failed to load image";
+                        console.log(error);
                     })
                     messageContent.appendChild(imageContent);
                     messageElement.appendChild(messageContent);
@@ -190,16 +194,20 @@ function getChats() {
                     videoContent.controls = true;
                     storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                         videoContent.src = url;
+                    }).catch((error) => {
+                        messageContent.innerHTML += "Failed to load video";
+                        console.log(error);
                     })
                     messageContent.appendChild(videoContent);
                     messageElement.appendChild(messageContent);
                 } else if (data.val().type === "audio") {
                     var audioContent = document.createElement("audio");
-                    // var sourceContent = document.createElement("source");
-                    // audioContent.appendChild(sourceContent);
                     audioContent.controls = true;
                     storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                         audioContent.src = url;
+                    }).catch((error) => {
+                        messageContent.innerHTML += "Failed to load audio";
+                        console.log(error);
                     })
                     messageContent.appendChild(audioContent);
                     messageElement.appendChild(messageContent);
@@ -209,9 +217,14 @@ function getChats() {
                     fileContent.download = true;
                     storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
                         buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name.length > 50 ? sanitize(metadata.name.slice(0, 50)) + "..." : sanitize(metadata.name)}`;
+                    }).catch((error) => {
+                        console.log(error);
                     })
                     storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                         fileContent.href = url;
+                    }).catch((error) => {
+                        messageContent.innerHTML += "Failed to load file";
+                        console.log(error);
                     })
                     fileContent.appendChild(buttonContent);
                     messageContent.appendChild(fileContent);

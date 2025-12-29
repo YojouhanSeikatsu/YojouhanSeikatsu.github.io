@@ -349,20 +349,23 @@ function checkEdit() {
             globalMessages[index] = message_object;
         }
 
-        if (document.getElementById(message_object.key).children[1].className !== "username") {
+        if (document.getElementById(message_object.key).children[0].className !== "username") {
             var userElement = document.createElement("div");
             userElement.setAttribute("class", "username");
-            userElement.innerHTML = message_object.name;
+            userElement.innerHTML = message_object.val().display_name;
             userElement.style.fontWeight = "bold";
             document.getElementById(message_object.key).prepend(userElement);
+            document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
             document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[0].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
-        } else {
+        } else if (!document.getElementById(message_object.key).children[0].innerHTML.includes("(Edited)")) {
             document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[1].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+            document.getElementById(message_object.key).children[3].innerHTML = `<p>${message_object.val().message}</p>`;
+        } else {
+            document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
+            document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
         }
-
-        document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
     })
 }
 
@@ -2347,12 +2350,29 @@ function resizeTextBox() {
 function imagePopup() {
     showPopUp("Upload File",`
         <input type="file" id="fileUpload">
-        <button onclick="submitImage()" id="submitImageButton">Submit</button>`)
+        <button onclick="submitImage()" id="submitImageButton">Submit</button><br><br>
+        <div id="progressContainer" style="display: none">Progress: <progress id="uploadProgress" max="100" value="0"></progress> <span id="progressIndicator">Uploading...</span></div>`)
 }
 
 function submitImage() {
+    document.getElementById("progressContainer").style.display = "block";
     document.getElementById("submitImageButton").disabled = true;
-    var uploadTask = storage.ref(`${getUsername()}/${document.getElementById("fileUpload").files[0].name}`).put(document.getElementById("fileUpload").files[0]).then(() => {
+    var uploadTask = storage.ref(`${getUsername()}/${document.getElementById("fileUpload").files[0].name}`).put(document.getElementById("fileUpload").files[0])
+
+    uploadTask.on('state_changed', (snapshot) => {
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        document.getElementById("uploadProgress").value = progress;
+        switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED:
+                document.getElementById("progressIndicator").innerHMTL = "Paused...";
+                break;
+            case firebase.storage.TaskState.RUNNING:
+                document.getElementById("progressIndicator").innerHMTL = "Uploading...";
+                break;
+        }
+    }, (error) => {
+        alert(error);
+    }, () => {
         db.ref(`users/${getUsername()}`).once("value", function(user_object) {
             var fileExtension = document.getElementById("fileUpload").files[0].name.split('.').pop();
             var fileType;
@@ -2384,8 +2404,6 @@ function submitImage() {
                 document.getElementById("popup").remove();
             })
         })
-    }).catch((error) => {
-        alert(error);
     });
 }
 

@@ -2368,6 +2368,29 @@ function imagePopup() {
 }
 
 function submitImage() {
+    if (typeof(document.getElementById("fileUpload").files[0]) == "undefined") {
+        alert("Please select a file before submitting");
+        return;
+    }
+
+    var fileExtension = document.getElementById("fileUpload").files[0].name.split('.').pop();
+    var fileType;
+    if (["jpg", "gif", "webp", "png", "apng", "avif", "jpeg", "jfif", "pjpeg", "pjp"].includes(fileExtension)) {
+        fileType = "image";
+    } else if (["mp3", "flac", "wav"].includes(fileExtension)) {
+        fileType = "audio";
+    } else if (["mp4", "webm"].includes(fileExtension)) {
+        fileType = "video";
+    } else {
+        fileType = "file";
+    }
+
+    if ((document.getElementById("fileUpload").files[0].size > 10 * 1024 * 1024 && fileType === "image") || (document.getElementById("fileUpload").files[0].size > 50 * 1024 * 1024 && fileType === "video") || (document.getElementById("fileUpload").files[0].size > 100 * 1024 * 1024 && fileType === "audio") || (document.getElementById("fileUpload").files[0].size > 1024 * 1024 * 1024 && fileType === "file")) {
+        alert("File exceeds max size.");
+        return;
+    }
+
+
     document.getElementById("progressContainer").style.display = "block";
     document.getElementById("submitImageButton").disabled = true;
     var uploadTask = storage.ref(`${getUsername()}/${document.getElementById("fileUpload").files[0].name}`).put(document.getElementById("fileUpload").files[0])
@@ -2387,24 +2410,12 @@ function submitImage() {
         alert(error);
     }, () => {
         db.ref(`users/${getUsername()}`).once("value", function(user_object) {
-            var fileExtension = document.getElementById("fileUpload").files[0].name.split('.').pop();
-            var fileType;
-            if (["jpg", "gif", "webp", "png"].includes(fileExtension)) {
-                fileType = "image";
-            } else if (["mp3", "flac", "wav"].includes(fileExtension)) {
-                fileType = "audio";
-            } else if (["mp4", "webm"].includes(fileExtension)) {
-                fileType = "video";
-            } else {
-                fileType = "file";
-            }
-
             db.ref('chats/').push({
                 name: getUsername(),
                 message: document.getElementById("fileUpload").files[0].name,
                 admin: user_object.val().admin,
                 display_name: user_object.val().display_name,
-                type: fileType,
+                type: ["image", "audio", "video"].includes(uploadTask.snapshot.metadata.contentType.split('/')[0]) ? uploadTask.snapshot.metadata.contentType.split('/')[0] : "file",
                 channel: (sessionStorage.getItem("channel") || "general"),
                 edited: false,
                 time: Date.now(),

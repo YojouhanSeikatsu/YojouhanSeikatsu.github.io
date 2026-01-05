@@ -90,7 +90,7 @@ const commands = `!mute @[username] -- mutes the specified user (@everyone compa
 
 !donationson -- turns the donation campaign on (only available to those above 5000 admin level)/
 
-!shadowban -- makes the specified user's messages invisible to everyone but themselves (only available if you have more than or equal to 5 admin levels than the target)/
+!shadowban -- makes the specified user's messages invisible to everyone but themselves (only available if you have more than or equal to 5 admin levels than the target) (will not send a server message)/
 
 !shadowunban -- removes the shadow ban`;
 

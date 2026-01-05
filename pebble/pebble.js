@@ -276,11 +276,13 @@ function getChats() {
 
                 textarea.appendChild(messageElement);
 
-                db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
-                    if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
-                        messageElement.remove();
-                    }
-                })
+                if (data.val().name !== "[SERVER]") {
+                    db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
+                        if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
+                            messageElement.remove();
+                        }
+                    })
+                }
 
                 message_height = messageElement.offsetHeight || 0;
 
@@ -644,11 +646,13 @@ function refreshChat(user_data, change_channel = false, first = false) {
 
             textarea.appendChild(messageElement);
 
-            db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
-                if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
-                    messageElement.remove();
-                }
-            })
+            if (data.val().name !== "[SERVER]") {
+                db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
+                    if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
+                        messageElement.remove();
+                    }
+                })
+            }
 
             message_height = messageElement.offsetHeight;
 
@@ -1692,18 +1696,32 @@ function sendMessage() {
                 db.ref(`users/${message.substring(9)}`).update({
                     forceverify: true
                 })
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!unverify @")) {
                 db.ref(`users/${message.substring(9)}`).update({
                     forceverify: false
                 })
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!shadowban @")) {
                 db.ref(`users/${message.substring(12)}`).update({
                     shadowban: true
+                }).then(() => {
+                    alert("Successfully shadow banned " + message.substring(12));
+                }).catch((error) => {
+                    alert(error);
                 })
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!shadowunban @")) {
-                db.ref(`users/${message.substring(14)}`).update({
-                    shadowunban: false
+                db.ref(`users/${message.substring(14)}/shadowban`).remove().then(() => {
+                    alert("Successfully shadow unbanned " + message.substring(14));
+                }).catch((error) => {
+                    alert(error);
                 })
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!") && message.length > 3) {
                 alert("That is not an existing command!");
                 document.getElementById("text-box").value = "";

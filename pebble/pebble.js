@@ -276,6 +276,12 @@ function getChats() {
 
                 textarea.appendChild(messageElement);
 
+                db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
+                    if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
+                        messageElement.remove();
+                    }
+                })
+
                 message_height = messageElement.offsetHeight || 0;
 
                 if (data.val().display_name == "[VOTING]") {
@@ -637,6 +643,12 @@ function refreshChat(user_data, change_channel = false, first = false) {
 
 
             textarea.appendChild(messageElement);
+
+            db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
+                if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
+                    messageElement.remove();
+                }
+            })
 
             message_height = messageElement.offsetHeight;
 
@@ -1509,7 +1521,7 @@ function sendMessage() {
             } else if (message == "!cleardonations") {
                 if (obj.admin > 9000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                     db.ref(`users/`).once("value", function(data_clear) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban"];
                         var updates = {};
 
                         data_clear.forEach(child => {
@@ -1683,6 +1695,14 @@ function sendMessage() {
             } else if (message.startsWith("!unverify @")) {
                 db.ref(`users/${message.substring(9)}`).update({
                     forceverify: false
+                })
+            } else if (message.startsWith("!shadowban @")) {
+                db.ref(`users/${message.substring(12)}`).update({
+                    shadowban: true
+                })
+            } else if (message.startsWith("!shadowunban @")) {
+                db.ref(`users/${message.substring(14)}`).update({
+                    shadowunban: false
                 })
             } else if (message.startsWith("!") && message.length > 3) {
                 alert("That is not an existing command!");

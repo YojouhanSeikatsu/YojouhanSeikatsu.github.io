@@ -90,11 +90,15 @@ const commands = `!mute @[username] -- mutes the specified user (@everyone compa
 
 !donationson -- turns the donation campaign on (only available to those above 5000 admin level)/
 
-!shadowban -- makes the specified user's messages invisible to everyone but themselves (only available if you have more than or equal to 5 admin levels than the target) (will not send a server message)/
+!shadowban @[username] -- makes the specified user's messages invisible to everyone but themselves (only available if you have more than or equal to 5 admin levels than the target) (will not send a server message)/
 
-!shadowunban -- removes the shadow ban`;
+!shadowunban @[username] -- removes the shadow ban/
+
+!showshadowbans -- shows the list of shadow banned users`;
 
 
 const usrCommands = `!reveal @[username] -- shows the specified user's real name and admin level (compatible with @everyone)/
 
-!whisper @[username] [message] -- whispers to the specified user (no other user can see your message)`;
+!whisper @[username] [message] -- whispers to the specified user (no other user can see your message)/
+
+!showshadowbans -- shows the list of shadow banned users`;

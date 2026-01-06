@@ -1722,6 +1722,10 @@ function sendMessage() {
                 })
                 document.getElementById("text-box").value = "";
                 return;
+            } else if (message.startsWith("!showshadowbans")) {
+                showShadowBans();
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!") && message.length > 3) {
                 alert("That is not an existing command!");
                 document.getElementById("text-box").value = "";
@@ -2190,6 +2194,21 @@ function checkCommands() {
     })
     newComms += "</ul>"
     showPopUp("Admin Commands", newComms);
+}
+
+function showShadowBans() {
+    db.ref("users/").once("value", function(users_object) {
+        var newComms = "<ul>";
+        users_object.forEach(user => {
+            if (user.val().shadowban && user.key !== getUsername()) {
+                newComms += "<li>";
+                newComms += user.key;
+                newComms += "</li>";
+            }
+        })
+        newComms += "</ul>"
+        showPopUp("Shadow Bans", newComms);
+    })
 }
 
 function userCommands() {

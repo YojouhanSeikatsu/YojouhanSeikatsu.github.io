@@ -370,7 +370,7 @@ function checkEdit() {
             globalMessages[index] = message_object;
         }
 
-        if (document.getElementById(message_object.key).children[0].className !== "username") {
+        if (document.getElementById(message_object.key).children[1].className !== "username") {
             var userElement = document.createElement("div");
             userElement.setAttribute("class", "username");
             userElement.innerHTML = message_object.val().display_name;
@@ -379,12 +379,12 @@ function checkEdit() {
             document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
             document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[0].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
-        } else if (!document.getElementById(message_object.key).children[0].innerHTML.includes("(Edited)")) {
+        } else if (!document.getElementById(message_object.key).children[1].innerHTML.includes("(Edited)")) {
             document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[1].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
-            document.getElementById(message_object.key).children[3].innerHTML = `<p>${message_object.val().message}</p>`;
+            document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
         } else {
-            document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
+            document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
         }
     })

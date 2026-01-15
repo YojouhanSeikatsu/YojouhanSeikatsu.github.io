@@ -1214,20 +1214,22 @@ function sendMessage() {
                 return;
             } else if (message.startsWith("!reveal @")) {
                 var revealed_user = message.substring(9);
-                db.ref("users/" + revealed_user).once('value', function(revealedUser) {
-                    var revealingUser = obj;
-
-                    if ((!revealedUser.exists() || Object.hasOwn(otherObject.val().admin_list, revealedUser.val().id)) && revealed_user != "everyone") {
-                        alert("User cannot be revealed, " + revealed_user + " does not exist!");
-                        return;
-                    }
-                    if (revealedUser.val().admin + 9000 >=  revealingUser.admin && revealedUser.val().username != revealingUser.username && !Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
-                        // alert("Real Name: " + revealedUser.val().name + "\nAdmin Level: " + revealedUser.val().admin);
-                        alert("\nAdmin Level: " + revealedUser.val().admin);
-                    } else {
-                        alert("Username: " + revealedUser.val().username + "\nReal Name: " + revealedUser.val().name + "\nAdmin Level: " + revealedUser.val().admin);
-                    }
-                    return;
+                auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idtoken) {
+                    fetch("https://us-central1-rock-585b5.cloudfunctions.net/api/revealUser", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({idtoken, user: revealed_user})
+                    }).then(response => response.json()).then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert(data.message);
+                        }
+                    }).catch((error) => {
+                        alert(error);
+                    })
                 })
                 document.getElementById("text-box").value = "";
                 return;

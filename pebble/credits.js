@@ -94,7 +94,11 @@ const commands = `!mute @[username] -- mutes the specified user (@everyone compa
 
 !shadowunban @[username] -- removes the shadow ban/
 
-!showshadowbans -- shows the list of shadow banned users`;
+!showshadowbans -- shows the list of shadow banned users/
+
+!forceverify -- forces the specified user to verify their email if they want to continue chatting/
+
+!forceunverify -- removes the force verify`;
 
 
 const usrCommands = `!reveal @[username] -- shows the specified user's real name and admin level (compatible with @everyone)/

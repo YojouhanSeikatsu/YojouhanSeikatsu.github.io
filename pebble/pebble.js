@@ -1525,7 +1525,7 @@ function sendMessage() {
             } else if (message == "!cleardonations") {
                 if (obj.admin > 9000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                     db.ref(`users/`).once("value", function(data_clear) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify"];
                         var updates = {};
 
                         data_clear.forEach(child => {
@@ -1692,15 +1692,23 @@ function sendMessage() {
                 }
                 document.getElementById("text-box").value = "";
                 return;
-            } else if (message.startsWith("!verify @")) {
-                db.ref(`users/${message.substring(9)}`).update({
+            } else if (message.startsWith("!forceverify @")) {
+                db.ref(`users/${message.substring(14)}`).update({
                     forceverify: true
+                }).then(() => {
+                    sendServerMessage(`${getUsername()} has force verified @${message.substring(9)}`);
+                }).catch((error) => {
+                    alert(error);
                 })
                 document.getElementById("text-box").value = "";
                 return;
-            } else if (message.startsWith("!unverify @")) {
-                db.ref(`users/${message.substring(9)}`).update({
+            } else if (message.startsWith("!forceunverify @")) {
+                db.ref(`users/${message.substring(16)}`).update({
                     forceverify: false
+                }).then(() => {
+                    sendServerMessage(`${getUsername()} has force unverified @${message.substring(9)}`);
+                }).catch((error) => {
+                    alert(error);
                 })
                 document.getElementById("text-box").value = "";
                 return;
@@ -1937,6 +1945,15 @@ function setup() {
                     document.title = "Pebble";
                 }
             });
+
+            //forceverify check
+            db.ref(`users/${getUsername()}/forceverify`).on("value", function(verify_object) {
+                if (verify_object.exists() && verify_object.val() && !auth.currentUser.emailVerified) {
+                    document.body.innerHTML = `You will need to verify your email at ${auth.currentUser.email} to view chat and send messages.
+                        <button onclick="auth.currentUser.sendEmailVerification().then(() => {alert('Check your email to verify your account.');}).catch((error) => {alert(error)})">Send Verification Email</button><br>
+                        <button onclick="auth.currentUser.reload().then(() => {return auth.currentUser.getIdToken(true);}).then(() => {location.reload();})">Click here after verifying your email</button>`
+                }
+            })
 
             document.addEventListener('keydown', event => {
                 const key = event.key.toLowerCase();

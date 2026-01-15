@@ -989,7 +989,7 @@ function arrest() {
                         sendNotification(`${getUsername()} arrested ${target} and confiscated ${object.val().stolenauto || 0} autoclicker(s) and ${object.val().stolenmult || 0} mult`);
                         alert(`Successfully arrested ${target}`);
                     } else if (object.val().role == "jester" && policy_object.val()) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify"];
 
                         user_object.forEach(key => {
                             if (!keptKeys.includes(key.key)) {
@@ -1508,6 +1508,7 @@ function jesterRole() {
                             <option id="jesterangel" value="angel">Angel</option>
                             <option id="jesterbank" value="bank">Bank Teller</option>
                             <option id="jesterdiviner" value="diviner">Diviner</option>
+                            <option id="jestercouncil" value="council">Council</option>
                             <option id="jesterjester" value="jester">Jester</option>
                             <option id="jesternone" value="none">None</option>
                         </select>`;
@@ -1534,19 +1535,17 @@ function jesterRole() {
                         }
                     })
 
-                    db.ref("users/").once("value", function(user_objects) {
-                        if (user_objects.val()[getUsername()].ability1sleep) {
-                            document.getElementById("leadercheck").checked = user_objects.val()[getUsername()].ability1sleep[0] || false;
-                            document.getElementById("jestermoney").value = user_objects.val()[getUsername()].ability1sleep[1] || 0;
-                            document.getElementById("jesterauto").value = user_objects.val()[getUsername()].ability1sleep[2] || 0;
-                            document.getElementById("jestermult").value = user_objects.val()[getUsername()].ability1sleep[3] || 1;
-                            document.getElementById("jestergambling").checked = user_objects.val()[getUsername()].ability1sleep[4] || false;
-                            document.getElementById("jesterdeed").value = user_objects.val()[getUsername()].ability1sleep[5] || 0;
-                            if (user_objects.val()[getUsername()].ability1sleep[5]) {
-                                document.getElementById(`jester${user_objects.val()[getUsername()].ability1sleep[6]}`).selected = true;
-                            }
+                    if (object.val().ability1sleep) {
+                        document.getElementById("leadercheck").checked = object.val().ability1sleep[0] || false;
+                        document.getElementById("jestermoney").value = object.val().ability1sleep[1] || 0;
+                        document.getElementById("jesterauto").value = object.val().ability1sleep[2] || 0;
+                        document.getElementById("jestermult").value = object.val().ability1sleep[3] || 1;
+                        document.getElementById("jestergambling").checked = object.val().ability1sleep[4] || false;
+                        document.getElementById("jesterdeed").value = object.val().ability1sleep[5] || 0;
+                        if (object.val().ability1sleep[5]) {
+                            document.getElementById(`jester${object.val().ability1sleep[6]}`).selected = true;
                         }
-                    });
+                    }
                 }
             })
         })
@@ -2112,12 +2111,12 @@ function checkAutoclickerActive() {
         db.ref(`other/policy/list`).once("value", function(policy_object) {
             db.ref(`users/${getUsername()}`).once("value", function(object) {
                 if (snapshot.val()) {
-                    var time = Date.now() - object.val().autosleep
-                    days = Math.floor(time / 86400000)
-                    hours = Math.floor((time - days * 86400000) / 3600000)
-                    minutes = Math.floor((time - days * 86400000 - hours * 3600000) / 60000)
-                    seconds = Math.floor((time - days * 86400000 - hours * 3600000 - minutes * 60000) / 1000)
-                    money = Math.floor(time / 1000) * (object.val().autoclicker * (object.val().mult || 1))
+                    var time = Date.now() - object.val().autosleep;
+                    days = Math.floor(time / 86400000);
+                    hours = Math.floor((time - days * 86400000) / 3600000);
+                    minutes = Math.floor((time - days * 86400000 - hours * 3600000) / 60000);
+                    seconds = Math.floor((time - days * 86400000 - hours * 3600000 - minutes * 60000) / 1000);
+                    money = Math.floor(time / 1000) * (object.val().autoclicker * (object.val().mult || 1));
                     if (time > 600000 && object.val().autoclicker > 0) { // 10 minutes
                         if (object.val().role && ((object.val().role !== "bank" || policy_object.val()[2]) && (object.val().role !== "police" || policy_object.val()[1]) && (object.val().role !== "council" || policy_object.val()[6]) && object.val().role !== "pacifist")) {
                             showPopUp(

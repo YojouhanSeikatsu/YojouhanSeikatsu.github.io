@@ -1953,7 +1953,8 @@ function setup() {
                 if (verify_object.exists() && verify_object.val() && !auth.currentUser.emailVerified) {
                     document.body.innerHTML = `You will need to verify your email at ${auth.currentUser.email} to view chat and send messages.
                         <button onclick="auth.currentUser.sendEmailVerification().then(() => {alert('Check your email to verify your account.');}).catch((error) => {alert(error)})">Send Verification Email</button><br>
-                        <button onclick="auth.currentUser.reload().then(() => {return auth.currentUser.getIdToken(true);}).then(() => {location.reload();})">Click here after verifying your email</button>`
+                        <button onclick="auth.currentUser.reload().then(() => {return auth.currentUser.getIdToken(true);}).then(() => {location.reload();})">Click here after verifying your email</button><br>
+                        <button class="profile-button" id="logoutButton" onclick="logout()">Log Out</button>`
                 }
             })
 

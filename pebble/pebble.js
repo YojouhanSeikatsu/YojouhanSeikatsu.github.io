@@ -1698,7 +1698,7 @@ function sendMessage() {
                 db.ref(`users/${message.substring(14)}`).update({
                     forceverify: true
                 }).then(() => {
-                    sendServerMessage(`${getUsername()} has force verified @${message.substring(9)}`);
+                    sendServerMessage(`${getUsername()} has force verified @${message.substring(14)}`);
                 }).catch((error) => {
                     alert(error);
                 })
@@ -1708,7 +1708,7 @@ function sendMessage() {
                 db.ref(`users/${message.substring(16)}`).update({
                     forceverify: false
                 }).then(() => {
-                    sendServerMessage(`${getUsername()} has force unverified @${message.substring(9)}`);
+                    sendServerMessage(`${getUsername()} has force unverified @${message.substring(16)}`);
                 }).catch((error) => {
                     alert(error);
                 })

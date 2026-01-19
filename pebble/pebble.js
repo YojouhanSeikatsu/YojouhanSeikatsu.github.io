@@ -828,6 +828,10 @@ function displayMembers() {
                 memberElement.appendChild(timedElement);
                 memberElement.appendChild(trappedElement);
 
+                memberElement.addEventListener("click", () => {
+                    document.getElementById("text-box").value += username.username;
+                })
+
                 members.appendChild(mainElement);
             })
 
@@ -890,6 +894,11 @@ function displayMembers() {
                         timedElement.innerHTML = "";
                     }
                 })
+
+                memberElement.addEventListener("click", () => {
+                    document.getElementById("text-box").value += username.username;
+                })
+
 
                 memberElement.appendChild(mutedElement);
                 memberElement.appendChild(timedElement);
@@ -979,6 +988,10 @@ function redisplayMembers() {
             }
         })
 
+        memberElement.addEventListener("click", () => {
+            document.getElementById("text-box").value += username.username;
+        })
+
         memberElement.appendChild(awayElement);
         memberElement.appendChild(mutedElement);
         memberElement.appendChild(timedElement);
@@ -1046,6 +1059,11 @@ function redisplayMembers() {
                 timedElement.innerHTML = "";
             }
         })
+
+        memberElement.addEventListener("click", () => {
+            document.getElementById("text-box").value += username.username;
+        })
+
 
         memberElement.appendChild(mutedElement);
         memberElement.appendChild(timedElement);

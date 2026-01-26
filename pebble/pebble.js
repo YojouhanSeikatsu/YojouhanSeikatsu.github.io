@@ -1979,7 +1979,7 @@ function setup() {
     .then(data => {
         GPT_CONFIG.openai["apiKey"] = data.apiKey;
         if (data.banned) {
-            document.body.innerHTML = ``;
+            document.body.innerHTML = `You are permabanned`;
             return;
         }
         if (data.version === curr_version) {

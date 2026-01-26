@@ -13,7 +13,7 @@ var firstLoad = true;
 var timeoutId = false;
 var clearchatId = false;
 var globalActive;
-let db, auth, storage;
+let db, auth, storage, requestId;
 
 function getChats() {
     document.getElementById("getChatsButton").remove();
@@ -1973,7 +1973,7 @@ function setup() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: typeof(window.APPCHECK) !== "undefined" ? JSON.stringify({appcheck: window.APPCHECK, id: requestId}) : null
+        body: JSON.stringify({id: requestId})
     })
     .then(response => response.json())
     .then(data => {
@@ -3006,7 +3006,12 @@ window.onload = function() {
 
         auth.onAuthStateChanged(function(user) {
             if (user) {
-                setup();
+                var fpPromise = FingerprintJS.load()
+
+                fpPromise.then(fp => fp.get()).then(result => {
+                    requestId = result.visitorId;
+                    setup();
+                });
             } else {
                 main.style.display = "none";
                 loginBlock.style.display = "block";

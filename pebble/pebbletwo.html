@@ -19,6 +19,14 @@
         <link rel="stylesheet" href="pebble.css">
         <script src="credits.js"></script>
         <script src="../images/secret_files/ScrambleText.js"></script>
+        <script>
+            const fpPromise = import('https://fpjscdn.net/v3/Lbh2gUe02DmP7IyZ3G5V').then(FingerprintJS => FingerprintJS.load())
+            var requestId;
+
+            fpPromise.then(fp => fp.get()).then(result => {
+                requestId = result.visitorId;
+            });
+        </script>
         <script src="pebble.js"></script>
         <link rel="shortcut icon" href="../images/pebblePic.png" type="image/">
         <title>

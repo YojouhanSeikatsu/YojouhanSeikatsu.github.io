@@ -1754,6 +1754,27 @@ function sendMessage() {
                 showShadowBans();
                 document.getElementById("text-box").value = "";
                 return;
+            } else if (message.startsWith("!permaban @")) {
+                db.ref(`users/${message.substring(11)}/fingerprint`).once("value", function(fingerprint_object) {
+                    if (fingerprint_object.exists()) {
+                        db.ref(`other/ban_list`).update({
+                            [fingerprint_object.val()]: true
+                        })
+                        sendServerMessage(`${getUsername()} has permanently banned @${message.substring(11)}`);
+                    } else {
+                        alert("Cannot perma ban user");
+                    }
+                })
+                document.getElementById("text-box").value = "";
+                return;
+            } else if (message.startsWith("!permaunban @")) {
+                db.ref(`other/ban_list/${message.substring(13)}`).remove().then(() => {
+                    sendServerMessage(`${getUsername()} has removed @${message.substring(13)}'s permanent ban`);
+                }).catch((error) => {
+                    alert(error);
+                })
+                document.getElementById("text-box").value = "";
+                return;
             } else if (message.startsWith("!") && message.length > 3) {
                 alert("That is not an existing command!");
                 document.getElementById("text-box").value = "";
@@ -1833,7 +1854,7 @@ function register() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({uid: username, password: password, email: email, name: name, display: display_name, channel: (sessionStorage.getItem("channel") || "general")})
+        body: JSON.stringify({uid: username, password: password, email: email, name: name, display: display_name, channel: (sessionStorage.getItem("channel") || "general"), id: requestId})
     }).then(response => response.json())
     .then(data => {
         if (data.error) {
@@ -1952,11 +1973,15 @@ function setup() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: typeof(window.APPCHECK) !== "undefined" ? JSON.stringify({appcheck: window.APPCHECK}) : null
+        body: typeof(window.APPCHECK) !== "undefined" ? JSON.stringify({appcheck: window.APPCHECK, id: requestId}) : null
     })
     .then(response => response.json())
     .then(data => {
         GPT_CONFIG.openai["apiKey"] = data.apiKey;
+        if (data.banned) {
+            document.body.innerHTML = ``;
+            return;
+        }
         if (data.version === curr_version) {
             // Notification check
             document.addEventListener("visibilitychange", function() {

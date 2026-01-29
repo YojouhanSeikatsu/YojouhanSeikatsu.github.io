@@ -3004,18 +3004,19 @@ window.onload = function() {
         const appCheck = firebase.appCheck();
         appCheck.activate('6LcSGM8rAAAAAGtvp85S9U7ldej8RieeRdjj6-Hd', true, { provider: firebase.appCheck.ReCaptchaV3Provider });
 
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                var fpPromise = FingerprintJS.load()
+        var fpPromise = FingerprintJS.load()
 
-                fpPromise.then(fp => fp.get()).then(result => {
-                    requestId = result.visitorId;
+        fpPromise.then(fp => fp.get()).then(result => {
+            requestId = result.visitorId;
+            
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
                     setup();
-                });
-            } else {
-                main.style.display = "none";
-                loginBlock.style.display = "block";
-            }
+                } else {
+                    main.style.display = "none";
+                    loginBlock.style.display = "block";
+                }
+            })
         })
     } catch(err) {
         alert(err);

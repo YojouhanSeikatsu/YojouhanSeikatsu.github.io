@@ -16,6 +16,8 @@ var globalActive;
 let db, auth, storage, requestId;
 
 function getChats() {
+    document.getElementById("getChatsButton").remove();
+    
     db.ref(`users/${getUsername()}`).once("value", function(user_object) {
         db.ref('chats/').on('child_added', function(message_object) {
             globalMessages.push(message_object);
@@ -2080,7 +2082,6 @@ function setup() {
             checkDeletion();
             checkEdit();
             checkMute();
-            getChats();
 
             db.ref("other/medianAdmin").on('value', (obj) => {
                 obj = obj.val();

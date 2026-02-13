@@ -989,7 +989,7 @@ function arrest() {
                         sendNotification(`${getUsername()} arrested ${target} and confiscated ${object.val().stolenauto || 0} autoclicker(s) and ${object.val().stolenmult || 0} mult`);
                         alert(`Successfully arrested ${target}`);
                     } else if (object.val().role == "jester" && policy_object.val()) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify", "fingerprint"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify", "fingerprint"];
 
                         user_object.forEach(key => {
                             if (!keptKeys.includes(key.key)) {

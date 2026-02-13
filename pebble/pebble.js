@@ -36,12 +36,7 @@ function getChats() {
                     var username = data.val().name;
                 }
 
-                // TODO: FIX THIS TO DO SOMETHING IDK WHAT
-                if (data.val().removed) {
-                    var message = data.val().message;
-                } else {
-                    var message = data.val().message;
-                }
+                var message = data.val().message;
                 
                 let prevIndex = index - 1;
                 let prevItem = prevIndex >= 0 ? globalMessages[prevIndex] : null;
@@ -238,7 +233,7 @@ function getChats() {
                         message = message.toUpperCase();
                     }
 
-                    messageContent.innerHTML = convertToHTML(message);
+                    messageContent.innerHTML = convertToHTML(sanitize(message));
 
                     if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
                         messageContent.setAttribute("id", "ping-text");
@@ -376,16 +371,16 @@ function checkEdit() {
             userElement.innerHTML = message_object.val().display_name;
             userElement.style.fontWeight = "bold";
             document.getElementById(message_object.key).prepend(userElement);
-            document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
+            document.getElementById(message_object.key).children[2].innerHTML = `<p>${sanitize(message_object.val().message)}</p>`;
             document.getElementById(message_object.key).children[1].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[0].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
         } else if (!document.getElementById(message_object.key).children[1].innerHTML.includes("(Edited)")) {
             document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
             document.getElementById(message_object.key).children[1].innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
-            document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
+            document.getElementById(message_object.key).children[2].innerHTML = `<p>${sanitize(message_object.val().message)}</p>`;
         } else {
             document.getElementById(message_object.key).children[0].innerHTML = (curr.getMonth() + 1) + "/" + curr.getDate() + "/" + curr.getFullYear() + " " + curr.getHours().toString().padStart(2, '0') + ":" + curr.getMinutes().toString().padStart(2, '0');
-            document.getElementById(message_object.key).children[2].innerHTML = `<p>${message_object.val().message}</p>`;
+            document.getElementById(message_object.key).children[2].innerHTML = `<p>${sanitize(message_object.val().message)}</p>`;
         }
     })
 }
@@ -427,12 +422,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 var username = data.val().name;
             }
 
-            // TODO: FIX THIS TO DO SOMETHING IDK WHAT
-            if (data.val().removed) {
-                var message = data.val().message;
-            } else {
-                var message = data.val().message;
-            }
+            var message = data.val().message;
             
             let prevIndex = index - 1;
             let prevItem = prevIndex >= 0 ? globalMessages[prevIndex] : null;
@@ -608,7 +598,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
                     message = message.toUpperCase();
                 }
 
-                messageContent.innerHTML = convertToHTML(message);
+                messageContent.innerHTML = convertToHTML(sanitize(message));
 
                 if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
                     messageContent.setAttribute("id", "ping-text");
@@ -1106,16 +1096,7 @@ function sendMessage() {
 
     // EVERYTHING GOES HERE
     db.ref("users/" + username).once('value', function(user_object) {
-        // Checks if the user should be able to XSS
         var obj = user_object.val();
-        if (!obj.xss) {
-            message = sanitize(message);
-        }
-
-        //Check if user is muted
-        if (obj.muted) {
-            // return;
-        }
 
         // EVERYTHING ELSE
         db.ref("other/").once('value', (otherObject) => {
@@ -1545,7 +1526,7 @@ function sendMessage() {
             } else if (message == "!cleardonations") {
                 if (obj.admin > 9000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                     db.ref(`users/`).once("value", function(data_clear) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "xss", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify", "fingerprint"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify", "fingerprint"];
                         var updates = {};
 
                         data_clear.forEach(child => {

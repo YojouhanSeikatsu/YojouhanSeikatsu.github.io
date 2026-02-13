@@ -2118,19 +2118,12 @@ function toggleMenu() {
 
 function wipeChat() {
     var name = getUsername();
-    db.ref(`other/admin_list`).once("value", function(admin) {
-        db.ref(`users/${name}`).once("value", function(user_object) {
-            db.ref("wipeMessage").once("value", function(message) {
-                if (user_object.val().admin >= 9000 || Object.hasOwn(admin.val(), user_object.val().id)) {
-                    var wipeMessage = message.val();
-                    db.ref("chats/").remove().then(() => {
-                        sendServerMessage("<span style='display: none'>@everyone</span>" + name + " wiped the chat<br/>" + wipeMessage);
-                    })
-                } else {
-                    alert("This function is not available to those below 9000 admin level");
-                }
-            })
-        })
+    db.ref(`users/${name}`).once("value", function(user_object) {
+        if (user_object.val().admin >= 9000) {
+            db.ref("chats/").remove()
+        } else {
+            alert("This function is not available to those below 9000 admin level");
+        }
     })
 }
 

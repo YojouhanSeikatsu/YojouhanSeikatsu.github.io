@@ -233,7 +233,11 @@ function getChats() {
                         message = message.toUpperCase();
                     }
 
-                    messageContent.innerHTML = convertToHTML(sanitize(message));
+                    if (data.val().display_name !== "[VOTING]") {
+                        message = sanitize(message);
+                    }
+
+                    messageContent.innerHTML = convertToHTML(message);
 
                     if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
                         messageContent.setAttribute("id", "ping-text");
@@ -598,7 +602,12 @@ function refreshChat(user_data, change_channel = false, first = false) {
                     message = message.toUpperCase();
                 }
 
-                messageContent.innerHTML = convertToHTML(sanitize(message));
+                if (data.val().display_name !== "[VOTING]") {
+                    message = sanitize(message);
+                }
+                
+
+                messageContent.innerHTML = convertToHTML(message);
 
                 if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
                     messageContent.setAttribute("id", "ping-text");

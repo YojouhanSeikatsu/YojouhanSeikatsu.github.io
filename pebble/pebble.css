@@ -4,6 +4,11 @@
 }
 
 @font-face {
+    font-family: undertale-sans;
+    src: url("../images/pixel-comic-sans-undertale-sans-font.otf");
+}
+
+@font-face {
     font-family: icicles;
     src: url("../images/IceCaps-7rLD.ttf");
 }
@@ -699,6 +704,29 @@ iframe {
     font-size: 100%;
     border-color: white;
     font-family: undertale-papyrus;
+    padding-left: 2.5%;
+    text-align: left;
+    display: grid;
+    grid-template-columns: max-content auto;
+    column-gap: 3%;
+    align-items: center;
+}
+
+#sans {
+    float: left;
+    vertical-align: middle;
+    margin-top: 50%;
+    margin-bottom: 50%;
+}
+
+#sans-text {
+    width: 97.5%;
+    background-color: black;
+    border-style: solid;
+    border-width: 0.2em;
+    font-size: 100%;
+    border-color: white;
+    font-family: undertale-sans;
     padding-left: 2.5%;
     text-align: left;
     display: grid;

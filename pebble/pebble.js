@@ -233,6 +233,10 @@ function getChats() {
                         message = message.toUpperCase();
                     }
 
+                    if (data.val().effect === 5) {
+                        message = message.toLowerCase();
+                    }
+
                     if (data.val().display_name !== "[VOTING]") {
                         message = sanitize(message);
                     }
@@ -266,6 +270,14 @@ function getChats() {
                         messageElement.appendChild(messageContent);
                     } else if (data.val().effect === 4) {
                         messageContent.setAttribute("id", "fuyukai");
+                        messageElement.appendChild(messageContent);
+                    } else if (data.val().effect === 5) {
+                        var sans = document.createElement("img");
+                        sans.src = "../images/sans_neutral.png";
+                        sans.setAttribute("id", "sans");
+                        messageContent.prepend(sans);
+
+                        messageContent.setAttribute("id", "sans-text");
                         messageElement.appendChild(messageContent);
                     } else {
                         messageElement.appendChild(messageContent);
@@ -602,6 +614,10 @@ function refreshChat(user_data, change_channel = false, first = false) {
                     message = message.toUpperCase();
                 }
 
+                if (data.val().effect === 5) {
+                    message = message.toLowerCase();
+                }
+
                 if (data.val().display_name !== "[VOTING]") {
                     message = sanitize(message);
                 }
@@ -636,6 +652,14 @@ function refreshChat(user_data, change_channel = false, first = false) {
                     messageElement.appendChild(messageContent);
                 } else if (data.val().effect === 4) {
                     messageContent.setAttribute("id", "fuyukai");
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().effect === 5) {
+                    var sans = document.createElement("img");
+                    sans.src = "../images/sans_neutral.png";
+                    sans.setAttribute("id", "sans");
+                    messageContent.prepend(sans);
+
+                    messageContent.setAttribute("id", "sans-text");
                     messageElement.appendChild(messageContent);
                 } else {
                     messageElement.appendChild(messageContent);
@@ -2339,6 +2363,19 @@ function effectMenu() {
                     </div>
                 </div><br><br>
                 Unlock Requirement: Be the first person to donate more than $5 but less than $10     <button onclick="${user_object.val().active_effect === 4 ? "equipEffect('remove')" : "equipEffect(4)"}">${user_object.val().active_effect === 4 ? "Unequip" : "Equip"}</button>
+            </div>
+
+            <br><hr>
+
+            <div>
+                <p style="font-family: undertale-sans;">sans</p><br><br>
+                <div id="message">
+                    <div class="message-text" id="sans-text">
+                        <img id="sans" src="../images/sans_neutral.png">
+                        <p>'sup</p>
+                    </div>
+                </div><br><br>
+                Unlock Requirement: idk man     <button onclick="${user_object.val().active_effect === 5 ? "equipEffect('remove')" : "equipEffect(5)"}">${user_object.val().active_effect === 5 ? "Unequip" : "Equip"}</button>
             </div>
 
             <br><hr>

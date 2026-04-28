@@ -1,4 +1,4 @@
-let curr_version = "v7.8"
+let curr_version = "v7.9"
 
 function getUsername() {
     return auth.currentUser.uid;

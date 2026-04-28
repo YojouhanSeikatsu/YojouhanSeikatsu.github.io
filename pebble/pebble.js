@@ -13,7 +13,7 @@ var firstLoad = true;
 var timeoutId = false;
 var clearchatId = false;
 var globalActive;
-let db, auth, storage, requestId;
+let db, auth, storage;
 
 function getChats() {
     document.getElementById("getChatsButton").remove();
@@ -1559,7 +1559,7 @@ function sendMessage() {
             } else if (message == "!cleardonations") {
                 if (obj.admin > 9000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                     db.ref(`users/`).once("value", function(data_clear) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify", "fingerprint"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify"];
                         var updates = {};
 
                         data_clear.forEach(child => {
@@ -1768,27 +1768,6 @@ function sendMessage() {
                 showShadowBans();
                 document.getElementById("text-box").value = "";
                 return;
-            } else if (message.startsWith("!permaban @")) {
-                db.ref(`users/${message.substring(11)}/fingerprint`).once("value", function(fingerprint_object) {
-                    if (fingerprint_object.exists()) {
-                        db.ref(`other/ban_list`).update({
-                            [fingerprint_object.val()]: true
-                        })
-                        sendServerMessage(`${getUsername()} has permanently banned @${message.substring(11)}`);
-                    } else {
-                        alert("Cannot perma ban user");
-                    }
-                })
-                document.getElementById("text-box").value = "";
-                return;
-            } else if (message.startsWith("!permaunban @")) {
-                db.ref(`other/ban_list/${message.substring(13)}`).remove().then(() => {
-                    sendServerMessage(`${getUsername()} has removed @${message.substring(13)}'s permanent ban`);
-                }).catch((error) => {
-                    alert(error);
-                })
-                document.getElementById("text-box").value = "";
-                return;
             } else if (message.startsWith("!") && message.length > 3) {
                 alert("That is not an existing command!");
                 document.getElementById("text-box").value = "";
@@ -1868,7 +1847,7 @@ function register() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({uid: username, password: password, email: email, name: name, display: display_name, channel: (sessionStorage.getItem("channel") || "general"), id: requestId})
+        body: JSON.stringify({uid: username, password: password, email: email, name: name, display: display_name, channel: (sessionStorage.getItem("channel") || "general")})
     }).then(response => response.json())
     .then(data => {
         if (data.error) {
@@ -1986,8 +1965,7 @@ function setup() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({id: requestId})
+        }
     })
     .then(response => response.json())
     .then(data => {
@@ -3024,19 +3002,13 @@ window.onload = function() {
         const appCheck = firebase.appCheck();
         appCheck.activate('6LcSGM8rAAAAAGtvp85S9U7ldej8RieeRdjj6-Hd', true, { provider: firebase.appCheck.ReCaptchaV3Provider });
 
-        var fpPromise = FingerprintJS.load()
-
-        fpPromise.then(fp => fp.get()).then(result => {
-            requestId = result.visitorId;
-            
-            auth.onAuthStateChanged(function(user) {
-                if (user) {
-                    setup();
-                } else {
-                    main.style.display = "none";
-                    loginBlock.style.display = "block";
-                }
-            })
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                setup();
+            } else {
+                main.style.display = "none";
+                loginBlock.style.display = "block";
+            }
         })
     } catch(err) {
         alert(err);

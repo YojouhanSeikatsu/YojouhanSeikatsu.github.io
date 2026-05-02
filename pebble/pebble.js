@@ -13,7 +13,7 @@ var firstLoad = true;
 var timeoutId = false;
 var clearchatId = false;
 var globalActive;
-let db, auth, storage;
+let db, auth, storage, pfpstorage;
 
 function getChats() {
     document.getElementById("getChatsButton").remove();
@@ -45,20 +45,21 @@ function getChats() {
                 messageElement.setAttribute("class", "message");
                 messageElement.setAttribute("id", data.key);
 
-                if (data.val().display_name == "[SERVER]") {
+                if (data.val().profileimage && (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited)) {
+                    pfpstorage.ref(`${data.val().name}/${obj.profileimage}`).getDownloadURL().then((url) => {
+                        var messageImg = document.createElement("img");
+                        messageImg.src = url;
+                        messageImg.setAttribute("class", "profile-img");
+                        messageElement.prepend(messageImg);
+                    })
+                } else if (data.val().display_name == "[SERVER]" || prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
                     var messageImg = document.createElement("img");
                     messageImg.src = "../images/meteorite.png";
                     messageImg.setAttribute("class", "profile-img");
+                    messageImg.style.objectFit = "contain";
+                    messageImg.style.width = '3%';
                     messageElement.appendChild(messageImg);
                 }
-                // else if (data.val().admin >= 2 && data.val().profileimage && (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited)) {
-                //     storage.ref(`${data.val().name}/profile/${data.val().profileimage}`).getDownloadURL().then((url) => {
-                //         var messageImg = document.createElement("img");
-                //         messageImg.src = url;
-                //         messageImg.setAttribute("class", "profile-img");
-                //         messageElement.prepend(messageImg);
-                //     })
-                // }
 
                 var timeElement = document.createElement("div");
                 var currTime;
@@ -447,10 +448,19 @@ function refreshChat(user_data, change_channel = false, first = false) {
             messageElement.setAttribute("class", "message");
             messageElement.setAttribute("id", data.key);
 
-            if (data.val().display_name == "[SERVER]") {
+            if (data.val().profileimage && (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited)) {
+                pfpstorage.ref(`${data.val().name}/${obj.profileimage}`).getDownloadURL().then((url) => {
+                    var messageImg = document.createElement("img");
+                    messageImg.src = url;
+                    messageImg.setAttribute("class", "profile-img");
+                    messageElement.prepend(messageImg);
+                })
+            } else if (data.val().display_name == "[SERVER]" || prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
                 var messageImg = document.createElement("img");
                 messageImg.src = "../images/meteorite.png";
                 messageImg.setAttribute("class", "profile-img");
+                messageImg.style.objectFit = "contain";
+                messageImg.style.width = '3%';
                 messageElement.appendChild(messageImg);
             }
 
@@ -584,8 +594,6 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 messageElement.appendChild(messageContent);
             } else if (data.val().type === "audio") {
                 var audioContent = document.createElement("audio");
-                // var sourceContent = document.createElement("source");
-                // audioContent.appendChild(sourceContent);
                 audioContent.controls = true;
                 storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
                     audioContent.src = url;
@@ -1425,7 +1433,7 @@ function sendMessage() {
                         edited: false,
                         time: Date.now(),
                         effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
-                        // profileimage: obj.profileimage,
+                        profileimage: obj.profileimage || false,
                     }).then(function() {
                         db.ref("users/" + username).update({
                             sleep: Date.now(),
@@ -1559,7 +1567,7 @@ function sendMessage() {
             } else if (message == "!cleardonations") {
                 if (obj.admin > 9000 || Object.hasOwn(otherObject.val().admin_list, user_object.val().id)) {
                     db.ref(`users/`).once("value", function(data_clear) {
-                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify"];
+                        const keptKeys = ["active", "admin", "muted", "name", "password", "sleep", "username", "trapped", "profilesleep", "active_effect", "effects", "display_name", "donationsban", "activeoption", "shadowban", "forceverify", "profileimage"];
                         var updates = {};
 
                         data_clear.forEach(child => {
@@ -1794,7 +1802,7 @@ function sendMessage() {
                     edited: false,
                     time: Date.now(),
                     effect: ((obj.effects || false) && (obj.effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
-                    // profileimage: obj.profileimage,
+                    profileimage: obj.profileimage || false,
                 }).then(function() {
                     db.ref("users/" + username).update({
                         sleep: Date.now(),
@@ -2377,6 +2385,80 @@ function effectMenu() {
     })
 }
 
+function PFPmenu() {
+    db.ref(`users/${getUsername()}`).once("value", function(user_object) {
+        showPopUp("Profile Picture", `
+            <div id="pfpcroppie"></div>
+            <input type="file" id="fileUpload">
+            <button id="changeButton">Change</button><br><br>
+            <div id="progressContainer" style="display: none">Progress: <progress id="uploadProgress" max="100" value="0"></progress> <span id="progressIndicator">Uploading...</span></div>
+        `);
+
+        var c = new Croppie(document.getElementById('pfpcroppie'), {
+            viewport: {type: 'circle'}
+        });
+
+        document.querySelector('#changeButton').addEventListener('click', () => {
+            c.result('blob').then(function(blob) {
+                changePFP(blob);
+            });
+        });
+
+        if (user_object.val().profileimage) {
+            pfpstorage.ref(`${user_object.val().username}/${user_object.val().profileimage}`).getDownloadURL().then((url) => {
+                fetch(url)
+                .then(res => res.blob())
+                .then(blob => {
+                    const localUrl = URL.createObjectURL(blob);
+                    return c.bind({ url: localUrl });
+                });
+            });
+        }
+
+        document.getElementById("fileUpload").addEventListener('change', (event) => {
+            if (typeof(document.getElementById("fileUpload").files[0]) != "undefined") {
+                c.bind({ url: URL.createObjectURL(document.getElementById("fileUpload").files[0]) });
+            } else {
+                c.bind({ url: '' });
+            }
+        })
+    });
+}
+
+function changePFP(image) {
+    if (!image) {
+        alert("Please select a file before submitting");
+        return;
+    }
+
+    if (image.size > 50 * 1024 * 1024) {
+        alert("File exceeds max size.");
+        return;
+    }
+
+    var uploadTask = pfpstorage.ref(`${getUsername()}/image.${image.type.split("/")[1]}`).put(image)
+
+    uploadTask.on('state_changed', (snapshot) => {
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        document.getElementById("uploadProgress").value = progress;
+        switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED:
+                document.getElementById("progressIndicator").innerHMTL = "Paused...";
+                break;
+            case firebase.storage.TaskState.RUNNING:
+                document.getElementById("progressIndicator").innerHMTL = "Uploading...";
+                break;
+        }
+    }, (error) => {
+        alert(error);
+    }, () => {
+        db.ref("users/" + getUsername()).update({
+            profileimage: `image.${image.type.split("/")[1]}`,
+        })
+        document.getElementById("popup").remove();
+    });
+}
+
 function scramblePreview() {
     if (document.getElementById("anomaly-text")) {
         var scrambleText = new ScrambleText(document.getElementById("anomaly-text")).start();
@@ -2538,7 +2620,7 @@ function submitImage() {
                 edited: false,
                 time: Date.now(),
                 effect: ((user_object.val().effects || false) && (user_object.val().effects["apply"] || false)) ? typeof(user_object.val().active_effect) == "undefined" ? false : user_object.val().active_effect : false,
-                // profileimage: user_object.val().profileimage,
+                profileimage: user_object.val().profileimage,
             }).then(function() {
                 db.ref("users/" + getUsername()).update({
                     sleep: Date.now(),
@@ -2992,6 +3074,7 @@ window.onload = function() {
         db = firebase.database();
         auth = firebase.auth();
         storage = firebase.storage();
+        pfpstorage = firebase.app().storage("gs://pebble-profile-pictures")
 
         const script = document.createElement('script');
         script.src = '../config.js';

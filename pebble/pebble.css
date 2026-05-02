@@ -419,10 +419,10 @@ textarea:focus {
 }
 
 .profile-img {
-    max-width: 3%;
     height: 3%;
-    object-fit: contain;
+    object-fit: cover;
     vertical-align: middle;
+    border-radius: 50%;
 }
 
 .sidebar {

@@ -172,11 +172,25 @@
                 <div class="message-area" id="textarea">
                     <button onclick="getChats()" id="getChatsButton">If you want to see chat, click here</button>
                 </div>
-                <div class="text-area" id="downbar">
+                <div class="chat-input-container">
+                    <div class="typing-bar" id="typing-bar">
+                        User is typing...
+                    </div>
+
+                    <div class="text-area" id="downbar">
                     <button class="send-image" onclick="imagePopup()">+</button>
-                    <textarea class="box-message" placeholder="Message" id="text-box" spellcheck="false" autocapitalize="off"></textarea>
+
+                    <textarea
+                    class="box-message"
+                    placeholder="Message"
+                    id="text-box"
+                    spellcheck="false"
+                    autocapitalize="off"></textarea>
+
                     <button class="send-message" onclick="sendMessage()">➤</button>
-                </div>
+                    </div>
+
+                    </div>
             </div>
             <div class="game-area" id="gamearea">
 

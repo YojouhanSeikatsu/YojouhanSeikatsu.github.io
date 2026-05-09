@@ -13,7 +13,11 @@ var firstLoad = true;
 var timeoutId = false;
 var clearchatId = false;
 var globalActive;
-let db, auth, storage, pfpstorage;
+let db, auth, storage, pfpstorage, typing = false;
+const formatter = new Intl.ListFormat('en-US', { 
+    style: 'long', 
+    type: 'conjunction' 
+});
 
 function getChats() {
     document.getElementById("getChatsButton").remove();
@@ -1968,6 +1972,30 @@ function changeChannel(channel) {
     textarea.scrollTop = textarea.scrollHeight;
 }
 
+function checkTypers() {
+    db.ref(`typers`).on("value", function(typer_object) {
+        if (typer_object.exists()) {
+            var typers = [];
+
+            typer_object.forEach(typer => {
+                if (typer.val() !== getUsername())
+                typers.push(typer.val());
+            })
+
+            if (typers.length > 0) {
+                document.getElementsByClassName("text-area")[0].style.height = "5%";
+                document.getElementsByClassName("typing-bar")[0].style.display = "flex";
+
+                if (typers.length === 1) document.getElementsByClassName("typing-bar")[0].innerHTML = typers.join(", ") + " is typing...";
+                if (typers.length > 1) document.getElementsByClassName("typing-bar")[0].innerHTML = formatter.format(typers) + " are typing...";
+            }
+        } else {
+            document.getElementsByClassName("text-area")[0].style.height = "7.5%";
+            document.getElementsByClassName("typing-bar")[0].style.display = "none";
+        }
+    })
+}
+
 function setup() {
     fetch('https://us-central1-rock-585b5.cloudfunctions.net/api/getInfo', {
         method: 'POST',
@@ -2043,6 +2071,27 @@ function setup() {
                 resizeTextBox();
             });
 
+            document.getElementsByClassName("text-area")[0].addEventListener('input', (event) => {
+                if (event.target.value !== "") {
+                    db.ref("typers/").update({
+                        [getUsername()]: getUsername()
+                    })
+
+                    if (typing) {
+                        clearTimeout(typing);
+                    }
+                    
+                    typing = setTimeout(() => {
+                        db.ref("typers/" + getUsername()).remove()
+                    }, 10000)
+                } else {
+                    db.ref("typers/" + getUsername()).remove()
+                }
+            });
+
+            db.ref("typers/" + getUsername()).onDisconnect().remove();
+
+            checkTypers();
             slowMode();
             imageSleepCheck();
             update_name();

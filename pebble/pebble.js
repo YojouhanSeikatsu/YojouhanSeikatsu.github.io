@@ -24,295 +24,291 @@ function getChats() {
     
     db.ref(`users/${getUsername()}`).once("value", function(user_object) {
         db.ref('chats/').on('child_added', function(message_object) {
-            try {
-                globalMessages.push(message_object);
+            globalMessages.push(message_object);
 
-                const data = message_object;
-                const obj = user_object.val();
-                const index = globalMessages.length - 1;
-                const textarea = document.getElementById('textarea');
-                const y_scroll = textarea.scrollTop;
-                var message_height = 0;
+            const data = message_object;
+            const obj = user_object.val();
+            const index = globalMessages.length - 1;
+            const textarea = document.getElementById('textarea');
+            const y_scroll = textarea.scrollTop;
+            var message_height = 0;
 
-                if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin >= 9000) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
-                    if (everyoneRevealed) {
-                        // var username = data.val().real_name || "[SERVER]";
-                    } else {
-                        var username = data.val().name;
-                    }
+            if ((data.val().whisper == null || data.val().whisper == getUsername() || data.val().name == getUsername() || obj.admin >= 9000) && (data.val().channel == (sessionStorage.getItem("channel") || "general") || (data.val().name == "[SERVER]" && sessionStorage.getItem("channel") !== "extra"))) {
+                if (everyoneRevealed) {
+                    // var username = data.val().real_name || "[SERVER]";
+                } else {
+                    var username = data.val().name;
+                }
 
-                    var message = data.val().message;
-                    
-                    let prevIndex = index - 1;
-                    let prevItem = prevIndex >= 0 ? globalMessages[prevIndex] : null;
-                    
-                    var messageElement = document.createElement("div");
-                    messageElement.setAttribute("class", "message");
-                    messageElement.setAttribute("id", data.key);
+                var message = data.val().message;
+                
+                let prevIndex = index - 1;
+                let prevItem = prevIndex >= 0 ? globalMessages[prevIndex] : null;
+                
+                var messageElement = document.createElement("div");
+                messageElement.setAttribute("class", "message");
+                messageElement.setAttribute("id", data.key);
 
-                    if (data.val().profileimage && (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited)) {
-                        pfpstorage.ref(`${data.val().name}/${obj.profileimage}`).getDownloadURL().then((url) => {
-                            var messageImg = document.createElement("img");
-                            messageImg.src = url;
-                            messageImg.setAttribute("class", "profile-img");
-                            messageElement.prepend(messageImg);
-                        })
-                    } else if (data.val().display_name == "[SERVER]" || prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
+                if (data.val().profileimage && (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited)) {
+                    pfpstorage.ref(`${data.val().name}/${obj.profileimage}`).getDownloadURL().then((url) => {
                         var messageImg = document.createElement("img");
-                        messageImg.src = "../images/meteorite.png";
+                        messageImg.src = url;
                         messageImg.setAttribute("class", "profile-img");
-                        messageImg.style.objectFit = "contain";
-                        messageImg.style.width = '3%';
-                        messageElement.appendChild(messageImg);
-                    }
+                        messageElement.prepend(messageImg);
+                    })
+                } else if (data.val().display_name == "[SERVER]" || prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
+                    var messageImg = document.createElement("img");
+                    messageImg.src = "../images/meteorite.png";
+                    messageImg.setAttribute("class", "profile-img");
+                    messageImg.style.objectFit = "contain";
+                    messageImg.style.width = '3%';
+                    messageElement.appendChild(messageImg);
+                }
 
-                    var timeElement = document.createElement("div");
-                    var currTime;
-                    timeElement.setAttribute("id", "time");
-                    currTime = new Date(data.val().time);
-                    timeElement.innerHTML = (currTime.getMonth() + 1) + "/" + currTime.getDate() + "/" + currTime.getFullYear() + " " + currTime.getHours().toString().padStart(2, '0') + ":" + currTime.getMinutes().toString().padStart(2, '0');
-                    messageElement.appendChild(timeElement);
+                var timeElement = document.createElement("div");
+                var currTime;
+                timeElement.setAttribute("id", "time");
+                currTime = new Date(data.val().time);
+                timeElement.innerHTML = (currTime.getMonth() + 1) + "/" + currTime.getDate() + "/" + currTime.getFullYear() + " " + currTime.getHours().toString().padStart(2, '0') + ":" + currTime.getMinutes().toString().padStart(2, '0');
+                messageElement.appendChild(timeElement);
 
-                    if (data.val().display_name == "[SERVER]") {
-                        var userElement = document.createElement("div");
-                        userElement.setAttribute("class", "username");
-                        userElement.innerHTML = data.val().display_name;
-                        userElement.style.fontWeight = "bold";
-                        userElement.style.color = "Yellow";
-                        userElement.addEventListener("click", function(e) {
-                            if (userElement.innerHTML.includes("@")) {
-                                userElement.innerHTML = data.val().display_name;
-                            } else {
-                                userElement.innerHTML = data.val().display_name + " @(" + username + ")";
-                            }
-                        })
-                        messageElement.appendChild(userElement);
-                    } else if (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
-                        var userElement = document.createElement("div");
-                        userElement.setAttribute("class", "username");
-                        userElement.addEventListener("click", function(e) {
-                            if (userElement.innerHTML.includes("@")) {
-                                userElement.innerHTML = data.val().display_name;
-                            } else {
-                                userElement.innerHTML = data.val().display_name + " @(" + username + ")";
-                            }
-                        })
-                        userElement.innerHTML = data.val().display_name;
-                        if (data.val().edited) {
-                            userElement.innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
-                        }
-                        userElement.style.fontWeight = "bold";
-                        timeElement.style.marginTop = "25px";
-                        messageElement.appendChild(userElement);
-                    }
-
-
-
-                    messageElement.addEventListener("mouseover", function(e) {
-                        messageContent.style.backgroundColor = "gray";
-                        if ((data.val().name == getUsername() || data.val().admin < obj.admin) && !messageElement.querySelector("#delete-button") && !globalMessages[index].val().removed) {
-                            setTimeout(() => {
-                                var trashButton = document.createElement("button");
-                                timeElement.style.visibility = "hidden";
-                                trashButton.innerHTML = "🗑️️";
-                                trashButton.setAttribute("id", "delete-button");
-                                trashButton.addEventListener("click", function() {
-                                    db.ref("chats/" + globalMessages[index].key).remove();
-                                })
-                                messageElement.appendChild(trashButton);
-                            }, 100);
-                        }
-                        if (data.val().name == getUsername() && !messageElement.querySelector("#edit-button") && !globalMessages[index].val().removed) {
-                            var editing_message = localStorage.getItem("editing");
-                            var editButton = document.createElement("button");
-                            var textBox = document.getElementById("text-box");
-                            editButton.setAttribute("id", "edit-button");
-                            timeElement.style.visibility = "hidden";
-                            if (editing_message == globalMessages[index].key) {
-                                editButton.innerHTML = "🗙";
-                            } else {
-                                editButton.innerHTML = "✏️";
-                            }
-                            editButton.addEventListener("click", function() {
-                                if (editing_message == globalMessages[index].key) {
-                                    editButton.innerHTML = "✏️";
-                                    localStorage.removeItem("editing");
-                                    textBox.value = "";
-                                    textBox.focus();
-                                } else {
-                                    editButton.innerHTML = "🗙";
-                                    db.ref(`chats/${globalMessages[index].key}/message`).once("value", function(edit_message) {
-                                        textBox.value = unsanitize(edit_message.val());
-                                    })
-                                    textBox.focus();
-                                    localStorage.setItem("editing", globalMessages[index].key);
-                                }
-                            });
-
-                            messageElement.appendChild(editButton);
+                if (data.val().display_name == "[SERVER]") {
+                    var userElement = document.createElement("div");
+                    userElement.setAttribute("class", "username");
+                    userElement.innerHTML = data.val().display_name;
+                    userElement.style.fontWeight = "bold";
+                    userElement.style.color = "Yellow";
+                    userElement.addEventListener("click", function(e) {
+                        if (userElement.innerHTML.includes("@")) {
+                            userElement.innerHTML = data.val().display_name;
+                        } else {
+                            userElement.innerHTML = data.val().display_name + " @(" + username + ")";
                         }
                     })
-                    messageElement.addEventListener("mouseleave", function(e) {
-                        messageContent.style.backgroundColor = "";
-                        timeElement.style.visibility = "visible";
+                    messageElement.appendChild(userElement);
+                } else if (prevItem == null || prevItem.val().display_name != data.val().display_name || prevItem.val().channel != data.val().channel || data.val().edited) {
+                    var userElement = document.createElement("div");
+                    userElement.setAttribute("class", "username");
+                    userElement.addEventListener("click", function(e) {
+                        if (userElement.innerHTML.includes("@")) {
+                            userElement.innerHTML = data.val().display_name;
+                        } else {
+                            userElement.innerHTML = data.val().display_name + " @(" + username + ")";
+                        }
+                    })
+                    userElement.innerHTML = data.val().display_name;
+                    if (data.val().edited) {
+                        userElement.innerHTML += " <span style='color: gray; font-size: 60%'>(Edited)</span>";
+                    }
+                    userElement.style.fontWeight = "bold";
+                    timeElement.style.marginTop = "25px";
+                    messageElement.appendChild(userElement);
+                }
 
+
+
+                messageElement.addEventListener("mouseover", function(e) {
+                    messageContent.style.backgroundColor = "gray";
+                    if ((data.val().name == getUsername() || data.val().admin < obj.admin) && !messageElement.querySelector("#delete-button") && !globalMessages[index].val().removed) {
                         setTimeout(() => {
-                            var buttons = messageElement.querySelectorAll("#delete-button, #edit-button");
-                            buttons.forEach(function(button) {
-                                button.remove();
+                            var trashButton = document.createElement("button");
+                            timeElement.style.visibility = "hidden";
+                            trashButton.innerHTML = "🗑️️";
+                            trashButton.setAttribute("id", "delete-button");
+                            trashButton.addEventListener("click", function() {
+                                db.ref("chats/" + globalMessages[index].key).remove();
                             })
-                            timeElement.style.visibility = "visible";
-                        }, 100)
-                    })
-                    
-
-                    var messageContent = document.createElement("div");
-                    messageContent.setAttribute("class", "message-text");
-
-                    // Fix escaped LaTeX delimiters
-                    // message = message
-                    //     .replace(/\\\\\(/g, "\\(")   // \\( -> \(
-                    //     .replace(/\\\\\)/g, "\\)")   // \\) -> \)
-                    //     .replace(/\\\\\[/g, "\\[")   // \\[ -> \[
-                    //     .replace(/\\\\\]/g, "\\]");  // \\] -> \]
-                    if (data.val().type === "image") {
-                        var imageContent = document.createElement("img");
-                        imageContent.style.maxWidth = "70%";
-                        imageContent.style.maxHeight = "30vh";
-                        storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
-                            imageContent.src = url;
-                        }).catch((error) => {
-                            imageContent.src = "../images/504708-200.png";
-                            messageContent.innerHTML += "Failed to load image";
-                            console.log(error);
-                        })
-                        messageContent.appendChild(imageContent);
-                        messageElement.appendChild(messageContent);
-                    } else if (data.val().type === "video") {
-                        var videoContent = document.createElement("video");
-                        videoContent.style.maxWidth = "70%";
-                        videoContent.style.maxHeight = "30vh";
-                        videoContent.controls = true;
-                        storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
-                            videoContent.src = url;
-                        }).catch((error) => {
-                            messageContent.innerHTML += "Failed to load video";
-                            console.log(error);
-                        })
-                        messageContent.appendChild(videoContent);
-                        messageElement.appendChild(messageContent);
-                    } else if (data.val().type === "audio") {
-                        var audioContent = document.createElement("audio");
-                        audioContent.controls = true;
-                        storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
-                            audioContent.src = url;
-                        }).catch((error) => {
-                            messageContent.innerHTML += "Failed to load audio";
-                            console.log(error);
-                        })
-                        messageContent.appendChild(audioContent);
-                        messageElement.appendChild(messageContent);
-                    } else if (data.val().type === "file") {
-                        var fileContent = document.createElement("a");
-                        var buttonContent = document.createElement("button");
-                        fileContent.download = true;
-                        storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
-                            buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name.length > 50 ? sanitize(metadata.name.slice(0, 50)) + "..." : sanitize(metadata.name)}`;
-                        }).catch((error) => {
-                            console.log(error);
-                        })
-                        storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
-                            fileContent.href = url;
-                        }).catch((error) => {
-                            messageContent.innerHTML += "Failed to load file";
-                            console.log(error);
-                        })
-                        fileContent.appendChild(buttonContent);
-                        messageContent.appendChild(fileContent);
-                        messageElement.appendChild(messageContent);
-                    } else {
-                        message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
-                            return "\\[" + p1.replace(/\n/g, " ") + "\\]";
+                            messageElement.appendChild(trashButton);
+                        }, 100);
+                    }
+                    if (data.val().name == getUsername() && !messageElement.querySelector("#edit-button") && !globalMessages[index].val().removed) {
+                        var editing_message = localStorage.getItem("editing");
+                        var editButton = document.createElement("button");
+                        var textBox = document.getElementById("text-box");
+                        editButton.setAttribute("id", "edit-button");
+                        timeElement.style.visibility = "hidden";
+                        if (editing_message == globalMessages[index].key) {
+                            editButton.innerHTML = "🗙";
+                        } else {
+                            editButton.innerHTML = "✏️";
+                        }
+                        editButton.addEventListener("click", function() {
+                            if (editing_message == globalMessages[index].key) {
+                                editButton.innerHTML = "✏️";
+                                localStorage.removeItem("editing");
+                                textBox.value = "";
+                                textBox.focus();
+                            } else {
+                                editButton.innerHTML = "🗙";
+                                db.ref(`chats/${globalMessages[index].key}/message`).once("value", function(edit_message) {
+                                    textBox.value = unsanitize(edit_message.val());
+                                })
+                                textBox.focus();
+                                localStorage.setItem("editing", globalMessages[index].key);
+                            }
                         });
 
-                        if (data.val().effect === 3) {
-                            message = message.toUpperCase();
-                        }
-
-                        if (data.val().effect === 5) {
-                            message = message.toLowerCase();
-                        }
-
-                        if (data.val().display_name !== "[VOTING]") {
-                            message = sanitize(message);
-                        }
-
-                        messageContent.innerHTML = convertToHTML(message);
-
-                        if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
-                            messageContent.setAttribute("id", "ping-text");
-                        }
-
-                        if (data.val().effect === 0) {
-                            var textContent = document.createElement("div");
-                            messageElement.appendChild(textContent);
-                            textContent.setAttribute("id", "god-border");
-                            // messageContent.innerHTML = "";
-                            textContent.appendChild(messageContent);
-                            
-                            messageContent.setAttribute("id", "god-text");
-                            messageContent.setAttribute("class", "");
-                            messageElement.appendChild(textContent);
-                        } else if (data.val().effect === 2) {
-                            messageContent.style.color = "yellow";
-                            messageElement.appendChild(messageContent);
-                        } else if (data.val().effect === 3) {
-                            var papyrus = document.createElement("img");
-                            papyrus.src = "../images/papyrus_neutral.png";
-                            papyrus.setAttribute("id", "papyrus");
-                            messageContent.prepend(papyrus);
-
-                            messageContent.setAttribute("id", "papyrus-text");
-                            messageElement.appendChild(messageContent);
-                        } else if (data.val().effect === 4) {
-                            messageContent.setAttribute("id", "fuyukai");
-                            messageElement.appendChild(messageContent);
-                        } else if (data.val().effect === 5) {
-                            var sans = document.createElement("img");
-                            sans.src = "../images/sans_neutral.png";
-                            sans.setAttribute("id", "sans");
-                            messageContent.prepend(sans);
-
-                            messageContent.setAttribute("id", "sans-text");
-                            messageElement.appendChild(messageContent);
-                        } else {
-                            messageElement.appendChild(messageContent);
-                        }
+                        messageElement.appendChild(editButton);
                     }
+                })
+                messageElement.addEventListener("mouseleave", function(e) {
+                    messageContent.style.backgroundColor = "";
+                    timeElement.style.visibility = "visible";
 
-
-                    textarea.appendChild(messageElement);
-
-                    if (data.val().name !== "[SERVER]") {
-                        db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
-                            if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
-                                messageElement.remove();
-                            }
+                    setTimeout(() => {
+                        var buttons = messageElement.querySelectorAll("#delete-button, #edit-button");
+                        buttons.forEach(function(button) {
+                            button.remove();
                         })
+                        timeElement.style.visibility = "visible";
+                    }, 100)
+                })
+                
+
+                var messageContent = document.createElement("div");
+                messageContent.setAttribute("class", "message-text");
+
+                // Fix escaped LaTeX delimiters
+                // message = message
+                //     .replace(/\\\\\(/g, "\\(")   // \\( -> \(
+                //     .replace(/\\\\\)/g, "\\)")   // \\) -> \)
+                //     .replace(/\\\\\[/g, "\\[")   // \\[ -> \[
+                //     .replace(/\\\\\]/g, "\\]");  // \\] -> \]
+                if (data.val().type === "image") {
+                    var imageContent = document.createElement("img");
+                    imageContent.style.maxWidth = "70%";
+                    imageContent.style.maxHeight = "30vh";
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        imageContent.src = url;
+                    }).catch((error) => {
+                        imageContent.src = "../images/504708-200.png";
+                        messageContent.innerHTML += "Failed to load image";
+                        console.log(error);
+                    })
+                    messageContent.appendChild(imageContent);
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().type === "video") {
+                    var videoContent = document.createElement("video");
+                    videoContent.style.maxWidth = "70%";
+                    videoContent.style.maxHeight = "30vh";
+                    videoContent.controls = true;
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        videoContent.src = url;
+                    }).catch((error) => {
+                        messageContent.innerHTML += "Failed to load video";
+                        console.log(error);
+                    })
+                    messageContent.appendChild(videoContent);
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().type === "audio") {
+                    var audioContent = document.createElement("audio");
+                    audioContent.controls = true;
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        audioContent.src = url;
+                    }).catch((error) => {
+                        messageContent.innerHTML += "Failed to load audio";
+                        console.log(error);
+                    })
+                    messageContent.appendChild(audioContent);
+                    messageElement.appendChild(messageContent);
+                } else if (data.val().type === "file") {
+                    var fileContent = document.createElement("a");
+                    var buttonContent = document.createElement("button");
+                    fileContent.download = true;
+                    storage.ref(`${data.val().name}/${data.val().message}`).getMetadata().then((metadata) => {
+                        buttonContent.innerHTML = `${bytesToSize(metadata.size)} -- ${metadata.name.length > 50 ? sanitize(metadata.name.slice(0, 50)) + "..." : sanitize(metadata.name)}`;
+                    }).catch((error) => {
+                        console.log(error);
+                    })
+                    storage.ref(`${data.val().name}/${data.val().message}`).getDownloadURL().then((url) => {
+                        fileContent.href = url;
+                    }).catch((error) => {
+                        messageContent.innerHTML += "Failed to load file";
+                        console.log(error);
+                    })
+                    fileContent.appendChild(buttonContent);
+                    messageContent.appendChild(fileContent);
+                    messageElement.appendChild(messageContent);
+                } else {
+                    message = message.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, p1) => {
+                        return "\\[" + p1.replace(/\n/g, " ") + "\\]";
+                    });
+
+                    if (data.val().effect === 3) {
+                        message = message.toUpperCase();
                     }
 
-                    message_height = messageElement.offsetHeight || 0;
-
-                    if (data.val().display_name == "[VOTING]") {
-                        checkVoting();
+                    if (data.val().effect === 5) {
+                        message = message.toLowerCase();
                     }
 
-                    if (globalMessages.at(-1).val().effect === 1 && data.key == globalMessages.at(-1).key) {
-                        var scrambleText = new ScrambleText(messageContent).start();
+                    if (data.val().display_name !== "[VOTING]") {
+                        message = sanitize(message);
+                    }
+
+                    messageContent.innerHTML = message;
+
+                    if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
+                        messageContent.setAttribute("id", "ping-text");
+                    }
+
+                    if (data.val().effect === 0) {
+                        var textContent = document.createElement("div");
+                        messageElement.appendChild(textContent);
+                        textContent.setAttribute("id", "god-border");
+                        // messageContent.innerHTML = "";
+                        textContent.appendChild(messageContent);
+                        
+                        messageContent.setAttribute("id", "god-text");
+                        messageContent.setAttribute("class", "");
+                        messageElement.appendChild(textContent);
+                    } else if (data.val().effect === 2) {
+                        messageContent.style.color = "yellow";
+                        messageElement.appendChild(messageContent);
+                    } else if (data.val().effect === 3) {
+                        var papyrus = document.createElement("img");
+                        papyrus.src = "../images/papyrus_neutral.png";
+                        papyrus.setAttribute("id", "papyrus");
+                        messageContent.prepend(papyrus);
+
+                        messageContent.setAttribute("id", "papyrus-text");
+                        messageElement.appendChild(messageContent);
+                    } else if (data.val().effect === 4) {
+                        messageContent.setAttribute("id", "fuyukai");
+                        messageElement.appendChild(messageContent);
+                    } else if (data.val().effect === 5) {
+                        var sans = document.createElement("img");
+                        sans.src = "../images/sans_neutral.png";
+                        sans.setAttribute("id", "sans");
+                        messageContent.prepend(sans);
+
+                        messageContent.setAttribute("id", "sans-text");
+                        messageElement.appendChild(messageContent);
+                    } else {
+                        messageElement.appendChild(messageContent);
                     }
                 }
-            } catch (error) {
-                alert(error);
+
+
+                textarea.appendChild(messageElement);
+
+                if (data.val().name !== "[SERVER]") {
+                    db.ref(`users/${data.val().name}/shadowban`).once("value", function(shadow_object) {
+                        if (shadow_object.exists() && shadow_object.val() && data.val().name !== getUsername()) {
+                            messageElement.remove();
+                        }
+                    })
+                }
+
+                message_height = messageElement.offsetHeight || 0;
+
+                if (data.val().display_name == "[VOTING]") {
+                    checkVoting();
+                }
+
+                if (globalMessages.at(-1).val().effect === 1 && data.key == globalMessages.at(-1).key) {
+                    var scrambleText = new ScrambleText(messageContent).start();
+                }
             }
 
             // Notifications
@@ -639,7 +635,7 @@ function refreshChat(user_data, change_channel = false, first = false) {
                 }
                 
 
-                messageContent.innerHTML = convertToHTML(message);
+                messageContent.innerHTML = message;
 
                 if (message.includes("@" + getUsername()) || message.includes("@everyone")) {
                     messageContent.setAttribute("id", "ping-text");
